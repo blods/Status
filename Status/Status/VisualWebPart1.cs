@@ -37,16 +37,22 @@ namespace Status.VisualWebPart1
                 foreach (SystemsItem system in result)
                 {
                     dolbysystems[currentsystem] = new DolbySystem();
+
                     dolbysystems[currentsystem].name = system.Title;
                     dolbysystems[currentsystem].description = system.Description;
                     dolbysystems[currentsystem].id = (int)system.Id;
                     dolbysystems[currentsystem].sortorder = (int)system.SortOrder;
                     dolbysystems[currentsystem].currentstatus = 0;
-              
-                    
+
+                    dolbysystems[currentsystem].daystatus = new DayStatus[8];
+                    for (int x = 0; x < 8; x++)
+                    {
+                        dolbysystems[currentsystem].daystatus[x] = new DayStatus();
+                        dolbysystems[currentsystem].daystatus[x].status = 0;
+                    }
+
+                    currentsystem++;    // Move onto the next
                 }
-
-
 
             }
         }
@@ -55,18 +61,30 @@ namespace Status.VisualWebPart1
     // This class holds the information for one system
     public class DolbySystem
     {
-        public string name;         // name of the system
-        public string description;  // description
-        public double id;           // List ID
-        public int sortorder;       // sort order
-        public int currentstatus;   // Status now
+        public string name;             // name of the system
+        public string description;      // description
+        public double id;               // List ID
+        public int sortorder;           // sort order
+        public int currentstatus;       // Status now
+
+        public DayStatus[] daystatus;   // Statuses for particular days
+
+        
+        
     }
 
     // Represents the info for one specific day
     public class DayStatus
     {
-
-
+        public int status;          // Status for this particular time (defcom)
+        public string title;        // title for this outage
+        public string impacted;     // impacted systems
+        public string region;       // region impacted
+        public string offices;      // offices impacted
+        public DateTime start;      // start time
+        public DateTime end;        // end time
+        public string details;      // details
+        public string trackingref;  // tracking reference
 
     }
 }

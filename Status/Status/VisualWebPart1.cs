@@ -33,7 +33,9 @@ namespace Status.VisualWebPart1
                 DolbySystem[] dolbysystems = new DolbySystem[systemcount];
 
                 int currentsystem = 0;  // start at 0 and loop through each
-                // Populate the array
+                
+                // Populate the array with the list of systems
+
                 foreach (SystemsItem system in result)
                 {
                     dolbysystems[currentsystem] = new DolbySystem();
@@ -51,8 +53,27 @@ namespace Status.VisualWebPart1
                         dolbysystems[currentsystem].daystatus[x].status = 0;
                     }
 
-                    currentsystem++;    // Move onto the next
+                    currentsystem++;    // Move onto the next system
                 }
+
+
+                // Systems are all populated and the 8 status days populated with defaults
+                
+                // Time to look for outages to reflect in the data
+                // Return all outages from up to 10 days ago sorted by defcom (low to high)
+                var query = from outages in context.Outages
+                            where outages.Start >= DateTime.Now.AddDays(-10)
+                            orderby outages.Defcom descending
+                            select outages;
+
+                // Loop around each of the outages in the last 10 days
+                foreach (var outages in query)
+                {
+                    // Loop around the array of 7 day slots we have to fill
+
+                }
+
+
 
             }
         }

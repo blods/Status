@@ -22,18 +22,27 @@ namespace Status.VisualWebPart1
             Control control = Page.LoadControl(_ascxPath);
             Controls.Add(control);
 
-           // Testing SPMetal
+           // Communicate with SPMetal class
             using (StatusDataContext context = new StatusDataContext(SPContext.Current.Web.Url))
             {
                 var result = context.Systems;
 
-                int i = result.Count();
+                int systemcount = result.Count(); // Number of systems in list
 
-               
+                // Create an array of systems to store the info
+                DolbySystem[] dolbysystems = new DolbySystem[systemcount];
+
+                int currentsystem = 0;  // start at 0 and loop through each
+                // Populate the array
                 foreach (SystemsItem system in result)
                 {
-                    var test="";
-                    test = system.Title;
+                    dolbysystems[currentsystem] = new DolbySystem();
+                    dolbysystems[currentsystem].name = system.Title;
+                    dolbysystems[currentsystem].description = system.Description;
+                    dolbysystems[currentsystem].id = (int)system.Id;
+                    dolbysystems[currentsystem].sortorder = (int)system.SortOrder;
+                    dolbysystems[currentsystem].currentstatus = 0;
+              
                     
                 }
 
@@ -43,5 +52,21 @@ namespace Status.VisualWebPart1
         }
     }
 
-    public class 
+    // This class holds the information for one system
+    public class DolbySystem
+    {
+        public string name;         // name of the system
+        public string description;  // description
+        public double id;           // List ID
+        public int sortorder;       // sort order
+        public int currentstatus;   // Status now
+    }
+
+    // Represents the info for one specific day
+    public class DayStatus
+    {
+
+
+
+    }
 }

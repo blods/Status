@@ -58,9 +58,9 @@ namespace Status.VisualWebPart1
                             dolbysystems[currentsystem].daystatus[x].periodEnd = DateTime.Now;
                         }
                         else
-                        {
-                            dolbysystems[currentsystem].daystatus[x].periodStart = DateTime.Today.Date;
-                            dolbysystems[currentsystem].daystatus[x].periodEnd = DateTime.Today.Date.AddSeconds(86399);
+                        {   // Looks complicated but this is just working out a clean start and end fo each day so 12AM to 11:59:59PM 
+                            dolbysystems[currentsystem].daystatus[x].periodStart = DateTime.Today.Date.AddDays(-(x-1));
+                            dolbysystems[currentsystem].daystatus[x].periodEnd = DateTime.Today.Date.AddDays(-(x-1)).AddSeconds(86399);
                         }
                     }
 
@@ -80,8 +80,44 @@ namespace Status.VisualWebPart1
                 // Loop around each of the outages in the last 10 days
                 foreach (var outages in query)
                 {
-                    // Loop around the array of 7 day slots we have to fill
-                    string c = outages.Title;
+                    // For each outage we need to first match the system 
+
+                    foreach (DolbySystem s in dolbysystems)
+                    {
+                        if (s.name == outages.System.Title)
+                        {
+                            //and then match the days
+                            for (int x = 0; x < 8; x++)
+                            {
+                                if (outages.Start < s.daystatus[x].periodStart && outages.End < s.daystatus[x].periodStart)
+                                {
+                                    // this thing started and finished before this time
+                                }
+                                else if (outages.Start > s.daystatus[x].periodEnd && outages.End > s.daystatus[x].periodEnd)
+                                {
+                                    // this thing started and ended after this time
+                                }
+                                else
+                                {
+                                    // FOUND ONE
+                                    s.daystatus[x].status = Convert.ToInt32(outages.Defcom.ToString().Substring(outages.Defcom.ToString().Length -1));
+                                    s.daystatus[x].title = outages.Title;
+                                    s.daystatus[x].details = outages.Details;
+
+                                    // Handle an end date of null which means not set and so ongoing outage
+                                    if (outages.End == null) { s.daystatus[x].end = DateTime.MaxValue;}
+                                    else { s.daystatus[x].end = outages.End.Value; }
+                                   
+                                    s.daystatus[x].impacted = outages.ImpactedSystems;
+                                    s.daystatus[x].offices = outages.Offices;
+                                    s.daystatus[x].region = outages.Region.ToString();
+                                    s.daystatus[x].start = outages.Start.Value;
+                                    s.daystatus[x].trackingref = outages.TrackingRef;
+                                }
+                            }
+                        }
+                    }
+
                 }
 
 

@@ -77,7 +77,7 @@ namespace Status.VisualWebPart1
                             orderby outages.Defcom descending
                             select outages;
 
-                // Loop around each of the outages in the last 10 days
+                // Loop around each of the outages in the last 10 days and map to dolbysystems
                 foreach (var outages in query)
                 {
                     // For each outage we need to first match the system 
@@ -120,7 +120,7 @@ namespace Status.VisualWebPart1
 
                 }
 
-
+                int y = 1;
 
             }
         }

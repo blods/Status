@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package dslVersion="1.0.0.0" Id="44e9731f-5470-4059-b6c2-e84960b23311" solutionId="44e9731f-5470-4059-b6c2-e84960b23311" xmlns="http://schemas.microsoft.com/VisualStudio/2008/SharePointTools/PackageModel" name="Status">
+    <features>
+        <featureReference itemId="96c3bcc8-d220-4172-91b8-9dcfc1ed6923" />
+    </features>
+</package>

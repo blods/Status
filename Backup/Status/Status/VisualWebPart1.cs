@@ -69,7 +69,7 @@ namespace Status.VisualWebPart1
                 foreach (var outages in query)
                 {
                     // Loop around the array of 7 day slots we have to fill
-                    string c = outages.Title;
+
                 }
 
 

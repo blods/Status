@@ -48,8 +48,20 @@ namespace Status.VisualWebPart1
                     dolbysystems[currentsystem].daystatus = new DayStatus[8];
                     for (int x = 0; x < 8; x++)
                     {
-                        dolbysystems[currentsystem].daystatus[x] = new DayStatus();
-                        dolbysystems[currentsystem].daystatus[x].status = 0;
+                        dolbysystems[currentsystem].daystatus[x] = new DayStatus(); // Create instances of each day
+                        dolbysystems[currentsystem].daystatus[x].status = 0;        // Set them all to ticks
+
+                        // Now set the periodStart and periodEnd for each day (x days will be subtracted each time)
+                        if (x == 0) // If this is the first instance then start/end is right now
+                        {
+                            dolbysystems[currentsystem].daystatus[x].periodStart = DateTime.Now;
+                            dolbysystems[currentsystem].daystatus[x].periodEnd = DateTime.Now;
+                        }
+                        else
+                        {
+                            dolbysystems[currentsystem].daystatus[x].periodStart = DateTime.Today.Date;
+                            dolbysystems[currentsystem].daystatus[x].periodEnd = DateTime.Today.Date.AddSeconds(86399);
+                        }
                     }
 
                     currentsystem++;    // Move onto the next system
@@ -77,7 +89,7 @@ namespace Status.VisualWebPart1
             }
         }
     }
-
+    
     // This class holds the information for one system
     public class DolbySystem
     {
@@ -86,7 +98,6 @@ namespace Status.VisualWebPart1
         public double id;               // List ID
         public int sortorder;           // sort order
         public int currentstatus;       // Status now
-
         public DayStatus[] daystatus;   // Statuses for particular days
 
         
@@ -105,6 +116,8 @@ namespace Status.VisualWebPart1
         public DateTime end;        // end time
         public string details;      // details
         public string trackingref;  // tracking reference
+        public DateTime periodStart;// represents the start of this day
+        public DateTime periodEnd;  // represents the end of this day
 
     }
 }

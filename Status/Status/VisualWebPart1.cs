@@ -7,6 +7,7 @@ using System.Web.UI.WebControls.WebParts;
 using Microsoft.SharePoint;
 using Microsoft.SharePoint.WebControls;
 using System.Linq;
+using System.Globalization;
 
 
 namespace Status.VisualWebPart1
@@ -56,11 +57,13 @@ namespace Status.VisualWebPart1
                         {
                             dolbysystems[currentsystem].daystatus[x].periodStart = DateTime.Now;
                             dolbysystems[currentsystem].daystatus[x].periodEnd = DateTime.Now;
+                            dolbysystems[currentsystem].daystatus[x].daytext = "Now";
                         }
                         else
                         {   // Looks complicated but this is just working out a clean start and end fo each day so 12AM to 11:59:59PM 
                             dolbysystems[currentsystem].daystatus[x].periodStart = DateTime.Today.Date.AddDays(-(x-1));
                             dolbysystems[currentsystem].daystatus[x].periodEnd = DateTime.Today.Date.AddDays(-(x-1)).AddSeconds(86399);
+                            dolbysystems[currentsystem].daystatus[x].daytext = DateTime.Today.Date.AddDays(-(x - 1)).ToString("ddd", CultureInfo.CreateSpecificCulture("en-US"));
                         }
                     }
 
@@ -154,6 +157,7 @@ namespace Status.VisualWebPart1
         public string trackingref;  // tracking reference
         public DateTime periodStart;// represents the start of this day
         public DateTime periodEnd;  // represents the end of this day
+        public string daytext;      // day text
 
     }
 }

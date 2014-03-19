@@ -127,7 +127,23 @@ namespace Status.VisualWebPart1
 
             }
         }
+
+        protected override void Render(System.Web.UI.HtmlTextWriter writer)
+        {
+            
+            writer.Write("Hello");
+
+
+
+            writer.Write("<tr>");
+            writer.Write("<td>");
+            writer.Write("Events");
+
+
+        }
     }
+
+
     
     // This class holds the information for one system
     public class DolbySystem
@@ -161,3 +177,5 @@ namespace Status.VisualWebPart1
 
     }
 }
+
+

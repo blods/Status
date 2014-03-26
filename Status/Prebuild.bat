@@ -6,4 +6,4 @@ IF NOT EXIST .\PreviousVersionGeneratedCode MkDir .\PreviousVersionGeneratedCode
 IF EXIST Status.%SPLANGEXT% xcopy /Y/V Status.%SPLANGEXT% .\PreviousVersionGeneratedCode
 
 Echo Generating code ...
-"c:\program files\common files\microsoft shared\web server extensions\14\bin\SPMetal.exe" /web:http://sps-dev-01/status /code:Status.%SPLANGEXT% /user:dolbynet\dmttest-rs1 /password:dolby1234!
+"c:\program files\common files\microsoft shared\web server extensions\14\bin\SPMetal.exe" /web:http://sps-dev-01.dolby.net/status /code:Status.%SPLANGEXT% /user:dolbynet\dmttest-rs1 /password:dolby1234!

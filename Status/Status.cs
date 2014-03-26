@@ -23,10 +23,34 @@ public partial class StatusDataContext : Microsoft.SharePoint.Linq.DataContext {
 		this.OnCreated();
 	}
 	
+	[Microsoft.SharePoint.Linq.ListAttribute(Name="Icons")]
+	public Microsoft.SharePoint.Linq.EntityList<Document> Icons {
+		get {
+			return this.GetList<Document>("Icons");
+		}
+	}
+	
 	[Microsoft.SharePoint.Linq.ListAttribute(Name="Outages")]
 	public Microsoft.SharePoint.Linq.EntityList<OutagesItem> Outages {
 		get {
 			return this.GetList<OutagesItem>("Outages");
+		}
+	}
+	
+	[Microsoft.SharePoint.Linq.ListAttribute(Name="Scripts")]
+	public Microsoft.SharePoint.Linq.EntityList<Document> Scripts {
+		get {
+			return this.GetList<Document>("Scripts");
+		}
+	}
+	
+	/// <summary>
+	/// Use this library to create and store pages on this site.
+	/// </summary>
+	[Microsoft.SharePoint.Linq.ListAttribute(Name="Site Pages")]
+	public Microsoft.SharePoint.Linq.EntityList<WikiPage> SitePages {
+		get {
+			return this.GetList<WikiPage>("Site Pages");
 		}
 	}
 	
@@ -52,6 +76,7 @@ public partial class StatusDataContext : Microsoft.SharePoint.Linq.DataContext {
 /// Create a new list item.
 /// </summary>
 [Microsoft.SharePoint.Linq.ContentTypeAttribute(Name="Item", Id="0x01")]
+[Microsoft.SharePoint.Linq.DerivedEntityClassAttribute(Type=typeof(Document))]
 [Microsoft.SharePoint.Linq.DerivedEntityClassAttribute(Type=typeof(OutagesItem))]
 [Microsoft.SharePoint.Linq.DerivedEntityClassAttribute(Type=typeof(SubscriptionsItem))]
 [Microsoft.SharePoint.Linq.DerivedEntityClassAttribute(Type=typeof(SystemsItem))]
@@ -174,6 +199,116 @@ public partial class Item : Microsoft.SharePoint.Linq.ITrackEntityState, Microso
 		}
 		if ((null != this.PropertyChanging)) {
 			this.PropertyChanging(this, new System.ComponentModel.PropertyChangingEventArgs(propertyName));
+		}
+	}
+}
+
+/// <summary>
+/// Create a new document.
+/// </summary>
+[Microsoft.SharePoint.Linq.ContentTypeAttribute(Name="Document", Id="0x0101")]
+[Microsoft.SharePoint.Linq.DerivedEntityClassAttribute(Type=typeof(WikiPage))]
+public partial class Document : Item {
+	
+	private string _name;
+	
+	private string _documentModifiedBy;
+	
+	private string _documentCreatedBy;
+	
+	#region Extensibility Method Definitions
+	partial void OnLoaded();
+	partial void OnValidate();
+	partial void OnCreated();
+	#endregion
+	
+	public Document() {
+		this.OnCreated();
+	}
+	
+	[Microsoft.SharePoint.Linq.ColumnAttribute(Name="FileLeafRef", Storage="_name", Required=true, FieldType="File")]
+	public string Name {
+		get {
+			return this._name;
+		}
+		set {
+			if ((value != this._name)) {
+				this.OnPropertyChanging("Name", this._name);
+				this._name = value;
+				this.OnPropertyChanged("Name");
+			}
+		}
+	}
+	
+	[Microsoft.SharePoint.Linq.ColumnAttribute(Name="Modified_x0020_By", Storage="_documentModifiedBy", ReadOnly=true, FieldType="Text")]
+	public string DocumentModifiedBy {
+		get {
+			return this._documentModifiedBy;
+		}
+		set {
+			if ((value != this._documentModifiedBy)) {
+				this.OnPropertyChanging("DocumentModifiedBy", this._documentModifiedBy);
+				this._documentModifiedBy = value;
+				this.OnPropertyChanged("DocumentModifiedBy");
+			}
+		}
+	}
+	
+	[Microsoft.SharePoint.Linq.ColumnAttribute(Name="Created_x0020_By", Storage="_documentCreatedBy", ReadOnly=true, FieldType="Text")]
+	public string DocumentCreatedBy {
+		get {
+			return this._documentCreatedBy;
+		}
+		set {
+			if ((value != this._documentCreatedBy)) {
+				this.OnPropertyChanging("DocumentCreatedBy", this._documentCreatedBy);
+				this._documentCreatedBy = value;
+				this.OnPropertyChanged("DocumentCreatedBy");
+			}
+		}
+	}
+}
+
+/// <summary>
+/// Create a new wiki page.
+/// </summary>
+[Microsoft.SharePoint.Linq.ContentTypeAttribute(Name="Wiki Page", Id="0x010108")]
+public partial class WikiPage : Document {
+	
+	private string _wikiContent;
+	
+	#region Extensibility Method Definitions
+	partial void OnLoaded();
+	partial void OnValidate();
+	partial void OnCreated();
+	#endregion
+	
+	public WikiPage() {
+		this.OnCreated();
+	}
+	
+	[Microsoft.SharePoint.Linq.ColumnAttribute(Name="WikiField", Storage="_wikiContent", FieldType="Note")]
+	public string WikiContent {
+		get {
+			return this._wikiContent;
+		}
+		set {
+			if ((value != this._wikiContent)) {
+				this.OnPropertyChanging("WikiContent", this._wikiContent);
+				this._wikiContent = value;
+				this.OnPropertyChanged("WikiContent");
+			}
+		}
+	}
+	
+	[System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
+	[Microsoft.SharePoint.Linq.RemovedColumnAttribute()]
+	public override string Title {
+		get {
+			throw new System.InvalidOperationException("Field Title was removed from content type Wiki Page.");
+		}
+		set {
+			throw new System.InvalidOperationException("Field Title was removed from content type Wiki Page.");
 		}
 	}
 }

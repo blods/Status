@@ -8,6 +8,7 @@ using Microsoft.SharePoint;
 using Microsoft.SharePoint.WebControls;
 using System.Linq;
 using System.Globalization;
+using System.Text;
 
 
 namespace Status.VisualWebPart1
@@ -17,7 +18,15 @@ namespace Status.VisualWebPart1
     {
         // Visual Studio might automatically update this path when you change the Visual Web Part project item.
         private const string _ascxPath = @"~/_CONTROLTEMPLATES/Status/Status/VisualWebPart1UserControl.ascx";
+        public DolbySystem[] dolbysystems;
+        public string siteURL;
 
+        // Strings to hold the image URLs
+        public string tickImgURL;
+        public string stopImgURL;
+        public string coneImgURL;
+        public string warnImgURL;
+        
         protected override void CreateChildControls()
         {
             Control control = Page.LoadControl(_ascxPath);
@@ -26,12 +35,19 @@ namespace Status.VisualWebPart1
            // Communicate with SPMetal class
             using (StatusDataContext context = new StatusDataContext(SPContext.Current.Web.Url))
             {
-                var result = context.Systems;
+                var result = context.Systems.OrderBy(x => x.SortOrder); // Returns the systems sorted by sortorder
+                
+                siteURL = context.Web;                                  // Get the URL of the website (for adding references)
+                int systemcount = result.Count();                       // Number of systems in list
 
-                int systemcount = result.Count(); // Number of systems in list
+                // Create the URLs to the images
+                tickImgURL = siteURL + "/icons/tick.png";
+                stopImgURL = siteURL + "/icons/stop.png";
+                coneImgURL = siteURL + "/icons/cone.png";
+                warnImgURL = siteURL + "/icons/warn.png";
 
                 // Create an array of systems to store the info
-                DolbySystem[] dolbysystems = new DolbySystem[systemcount];
+                dolbysystems = new DolbySystem[systemcount];
 
                 int currentsystem = 0;  // start at 0 and loop through each
                 
@@ -40,6 +56,7 @@ namespace Status.VisualWebPart1
                 {
                     dolbysystems[currentsystem] = new DolbySystem();
 
+                    dolbysystems[currentsystem].description = "";
                     dolbysystems[currentsystem].name = system.Title;
                     dolbysystems[currentsystem].description = system.Description;
                     dolbysystems[currentsystem].id = (int)system.Id;
@@ -63,7 +80,7 @@ namespace Status.VisualWebPart1
                         {   // Looks complicated but this is just working out a clean start and end fo each day so 12AM to 11:59:59PM 
                             dolbysystems[currentsystem].daystatus[x].periodStart = DateTime.Today.Date.AddDays(-(x-1));
                             dolbysystems[currentsystem].daystatus[x].periodEnd = DateTime.Today.Date.AddDays(-(x-1)).AddSeconds(86399);
-                            dolbysystems[currentsystem].daystatus[x].daytext = DateTime.Today.Date.AddDays(-(x - 1)).ToString("ddd", CultureInfo.CreateSpecificCulture("en-US"));
+                            dolbysystems[currentsystem].daystatus[x].daytext = DateTime.Today.Date.AddDays(-(x - 1)).ToString("ddd", CultureInfo.CreateSpecificCulture("en-US")) + "<br />" + DateTime.Today.Date.AddDays(-(x - 1)).ToString("dd", CultureInfo.CreateSpecificCulture("en-US"));
                         }
                     }
 
@@ -89,7 +106,8 @@ namespace Status.VisualWebPart1
                     {
                         if (s.name == outages.System.Title)
                         {
-                            //and then match the days
+                            
+                            // Check each of the last 7 days 
                             for (int x = 0; x < 8; x++)
                             {
                                 if (outages.Start < s.daystatus[x].periodStart && outages.End < s.daystatus[x].periodStart)
@@ -99,6 +117,11 @@ namespace Status.VisualWebPart1
                                 else if (outages.Start > s.daystatus[x].periodEnd && outages.End > s.daystatus[x].periodEnd)
                                 {
                                     // this thing started and ended after this time
+                                }
+                                else if (outages.Start > s.daystatus[x].periodEnd)
+                                {
+                                    // This didnt start until after this date
+
                                 }
                                 else
                                 {
@@ -130,16 +153,160 @@ namespace Status.VisualWebPart1
 
         protected override void Render(System.Web.UI.HtmlTextWriter writer)
         {
+            // Do any necessary prerender stuff here
+
+            //Add qtip2 CSS
+            writer.WriteBeginTag("link");
+            writer.WriteAttribute("type", "text/css");
+            writer.WriteAttribute("rel", "stylesheet");
+            writer.WriteAttribute("href", siteURL + "/scripts/jquery.qtip.min.css");
+            writer.Write(HtmlTextWriter.SlashChar);
+            writer.Write(HtmlTextWriter.TagRightChar);
+
+            // Add jquery 1.7.2 from google
+            writer.WriteBeginTag("script");
+            writer.WriteAttribute("type", "text/javascript");
+            writer.WriteAttribute("src", "//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js");
+            writer.Write(HtmlTextWriter.TagRightChar);
+            writer.WriteEndTag("script");
+
+            // Add qtip javascript
+            writer.WriteBeginTag("script");
+            writer.WriteAttribute("type", "text/javascript");
+            writer.WriteAttribute("src", siteURL + "/scripts/jquery.qtip.min.js");
+            writer.Write(HtmlTextWriter.TagRightChar);
+            writer.WriteEndTag("script");
+
+            // Add CSS to hide tooltips and add padding
+            writer.Write("<style> body {padding:50px;} .tooltiptext{display:none;} </style>");
             
-            writer.Write("Hello");
+            // Start the table
+            Table infoTable = new Table();
+            infoTable.Attributes.Add("border", "1px");
+            
+
+            
+            TableRow infoRow = new TableRow();
+            TableCell infoCell = new TableCell();
+            
+            infoCell.Text="Test Table";
+            infoRow.Cells.Add(infoCell);
+            infoTable.Rows.Add(infoRow);
+            
+
+            //Render the table
+            infoTable.RenderControl(writer);
+
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine(@"<table align=""center"" style=""border: 1px solid #D4D0C8; width: 100%"">");
+            sb.AppendLine("<tbody>");
+
+            // Start a row
+            sb.AppendLine("<tr>");
+
+            // Heading Row 
+            sb.AppendLine(@"<td style=""text-align: center; background-color: #909090""></td>"); // FIrst column for the check boxes
+            sb.AppendLine(@"<td style=""font-size: 12px; text-align: center; background-color: #909090; color: #FFFFFF""><strong>System</strong></td>");
+
+            for (int x = 0; x < 8; x++)
+            {
+                sb.AppendLine(@"<td style=""font-size: 12px; text-align: center; background-color: #909090; color: #FFFFFF""><strong>" + dolbysystems[0].daystatus[x].daytext + "</strong></td>");                    
+            }
+
+            // End a row
+            sb.AppendLine("</tr>");
+
+            int alternaterows = 0;              // Used to keep track and flip colors 
+            
+            string alternateshade = "#DBE8EA";  // This is for the shading of the first 3 columns
+            string alternateshade2 = "#F5FAFA"; // This is for the shading for the columns 4 and up - but is either on or off
+
+            // Now do the other rows
+            foreach (DolbySystem s in dolbysystems)
+            {
+                sb.AppendLine("<tr>");
+
+                // Flip between the two colors for the first 3 columns
+                if (alternaterows == 0) {
+                    alternateshade = "#DBE8EA";
+                    alternaterows = 1;
+                } else {
+                    alternateshade = "#F5FAFA";
+                    alternaterows = 0;
+                }
+
+
+                // Do the System title
+                sb.AppendLine(@"<td valign=""middle"" style=""text-align: center; background-color: " + alternateshade + @";""><input name=""Checkbox1"" type=""checkbox"" /></td><td style=""background-color: " + alternateshade + @"""><strong>" + s.name + @"</strong></td>");
+
+                for (int x = 0; x < 8; x++ )
+                {
+                    sb.Append(@"<td style=""text-align: center;");
+
+                    //If this is 0 then we need to picj from the alternaterows colors
+                    if (x == 0)
+                    {
+                        sb.Append(@" background-color: " + alternateshade + @";"">");
+                    }
+                    else
+                    {
+                        // Only add the shading for column 4 and up every other cycle - otherwise its clear
+                        if (alternaterows == 1) {
+                            sb.Append(@" background-color: " + alternateshade2 + @";"">");
+                        }
+                        else {  // No shading here
+                            sb.Append(@""">");
+                        }
+                    }
+                    
+                    // Now we can add the symbol
+                    if (s.daystatus[x].status == 0)
+                    {
+                        sb.Append(@"<img src=""" + tickImgURL + @"""/></td>");
+                    }
+                    if (s.daystatus[x].status == 1)
+                    {
+                        sb.Append(@"<img src=""" + stopImgURL + @"""/></td>");
+                    }
+                    if (s.daystatus[x].status == 2)
+                    {
+                        sb.Append(@"<img src=""" + warnImgURL + @"""/></td>");
+                    }
+                    if (s.daystatus[x].status == 4)
+                    {
+                        sb.Append(@"<img src=""" + coneImgURL + @"""/></td>");
+                    }
+
+                    
+                }
+
+
+                sb.AppendLine("</tr>");
+            }
 
 
 
-            writer.Write("<tr>");
-            writer.Write("<td>");
-            writer.Write("Events");
+            // Close the table off here
+            sb.AppendLine("</tbody>");
+            sb.AppendLine("</table>");
+
+            writer.Write(sb);
+
+            writer.WriteBeginTag("table");
+            writer.WriteAttribute("align", "center");
+            writer.WriteAttribute("style", "border");
+            
 
 
+            writer.Write("Hello World");
+            /*
+            foreach (DolbySystem s in dolbysystems)
+            {
+                writer.Write(s.name.ToString());
+                writer.Write(" " + s.description.ToString() + " " + s.currentstatus.ToString());
+            }
+
+            */
         }
     }
 

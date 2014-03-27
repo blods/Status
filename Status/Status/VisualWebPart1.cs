@@ -170,6 +170,7 @@ namespace Status.VisualWebPart1
             writer.Write(HtmlTextWriter.TagRightChar);
             writer.WriteEndTag("script");
 
+
             // Add qtip javascript
             writer.WriteBeginTag("script");
             writer.WriteAttribute("type", "text/javascript");
@@ -178,20 +179,15 @@ namespace Status.VisualWebPart1
             writer.WriteEndTag("script");
 
             // Add CSS to hide tooltips and add padding
-            writer.Write("<style> body {padding:50px;} .tooltiptext{display:none;} </style>");
-            
+            writer.Write("<style>  .hidden {display:none;} </style>");
+
             // Start the table
             Table infoTable = new Table();
             infoTable.Attributes.Add("border", "1px");
             
 
             
-            TableRow infoRow = new TableRow();
-            TableCell infoCell = new TableCell();
-            
-            infoCell.Text="Test Table";
-            infoRow.Cells.Add(infoCell);
-            infoTable.Rows.Add(infoRow);
+  
             
 
             //Render the table
@@ -243,7 +239,7 @@ namespace Status.VisualWebPart1
                 {
                     sb.Append(@"<td style=""text-align: center;");
 
-                    //If this is 0 then we need to picj from the alternaterows colors
+                    //If this is 0 then we need to pic from the alternaterows colors
                     if (x == 0)
                     {
                         sb.Append(@" background-color: " + alternateshade + @";"">");
@@ -264,17 +260,60 @@ namespace Status.VisualWebPart1
                     {
                         sb.Append(@"<img src=""" + tickImgURL + @"""/></td>");
                     }
-                    if (s.daystatus[x].status == 1)
+                    else
                     {
-                        sb.Append(@"<img src=""" + stopImgURL + @"""/></td>");
-                    }
-                    if (s.daystatus[x].status == 2)
-                    {
-                        sb.Append(@"<img src=""" + warnImgURL + @"""/></td>");
-                    }
-                    if (s.daystatus[x].status == 4)
-                    {
-                        sb.Append(@"<img src=""" + coneImgURL + @"""/></td>");
+                        // Needs a tooltip
+                        sb.Append(@"<div class=""hasTooltip""><a href=""#tip"">");
+
+                        // Now add the image URL
+                        if (s.daystatus[x].status == 1)
+                        {
+                            sb.Append(@"<img src=""" + stopImgURL + @""" border=""0""> ");
+                        }
+                        if (s.daystatus[x].status == 2)
+                        {
+                            sb.Append(@"<img src=""" + warnImgURL + @""" border=""0""> ");
+                        }
+                        if (s.daystatus[x].status == 4)
+                        {
+                            sb.Append(@"<img src=""" + coneImgURL + @""" border=""0""> ");
+                        }
+
+                        
+                        sb.Append(@"</a></div>");   // Closes out the anchor and the div tag for the tooltip
+
+                        // Now add the tooltip text
+                        sb.Append(@"<div class=""hidden"">"); // Which should initially be hidden
+                        
+                        // Build the tooptip here
+                        sb.Append(@"<b>" + s.daystatus[x].title + @"</b><BR>");
+                        sb.Append(@"Start (PST): " + String.Format("{0:HH:mm}",s.daystatus[x].start) + @"<BR>");
+                      
+
+                        // Only show the end time if its not an ongoing outage
+                        if (s.daystatus[x].end < DateTime.Now)
+                        {
+                            sb.Append(@"End   (PST): " + String.Format("{0:HH:mm}", s.daystatus[x].end) + @"<BR>");
+                        }
+                        else { sb.Append(@"ONGOING<BR>");
+                        }
+
+                        sb.Append(@"TZ: " + s.daystatus[x].start.ToString("zzz") + @"<BR>");
+                        sb.Append(@"<BR>"); // Put a extrabreak before the next section
+                        if (s.daystatus[x].impacted != null) sb.Append(@"Impacted: " + s.daystatus[x].impacted + @"<BR>");
+                        if (s.daystatus[x].offices != null) sb.Append(@"Office:" + s.daystatus[x].offices + @"<BR>");
+                        if (s.daystatus[x].region != null) sb.Append(@"Region:" + s.daystatus[x].region + @"<BR><BR>");
+
+                        
+                        sb.Append(s.daystatus[x].details);
+                        
+
+                        sb.Append(@"</div>");
+
+
+                        // Now close out the cell
+                        sb.Append(@"</td>");
+
                     }
 
                     
@@ -292,21 +331,29 @@ namespace Status.VisualWebPart1
 
             writer.Write(sb);
 
-            writer.WriteBeginTag("table");
-            writer.WriteAttribute("align", "center");
-            writer.WriteAttribute("style", "border");
+            // Wrote out the little bit of javascript
             
+            // Add jquery 1.7.2 from google
+            writer.WriteBeginTag("script");
+            writer.WriteAttribute("language", "javascript");
+            writer.WriteAttribute("type", "text/javascript");
+            writer.Write(HtmlTextWriter.TagRightChar);
 
-
-            writer.Write("Hello World");
-            /*
-            foreach (DolbySystem s in dolbysystems)
-            {
-                writer.Write(s.name.ToString());
-                writer.Write(" " + s.description.ToString() + " " + s.currentstatus.ToString());
-            }
-
-            */
+            // Put the qtip javascript code in the page
+            // Thinks we want to be tips have to reside in a .hasTooltip class
+            // The next class to it needs to be called hidden and contains the text
+            writer.Write(@"$('.hasTooltip').each(function() 
+                { 
+                    $(this).qtip({
+                        content: {
+                            text: $(this).next('div'), 
+			                title: 'Status'
+                        }
+                    });
+                });
+            ");
+            writer.WriteEndTag("script");
+            
         }
     }
 

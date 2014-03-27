@@ -45,6 +45,16 @@ public partial class StatusDataContext : Microsoft.SharePoint.Linq.DataContext {
 	}
 	
 	/// <summary>
+	/// Use this library to store files which are included on pages within this site, such as images on Wiki pages.
+	/// </summary>
+	[Microsoft.SharePoint.Linq.ListAttribute(Name="Site Assets")]
+	public Microsoft.SharePoint.Linq.EntityList<Document> SiteAssets {
+		get {
+			return this.GetList<Document>("Site Assets");
+		}
+	}
+	
+	/// <summary>
 	/// Use this library to create and store pages on this site.
 	/// </summary>
 	[Microsoft.SharePoint.Linq.ListAttribute(Name="Site Pages")]

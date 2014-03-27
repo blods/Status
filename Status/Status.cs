@@ -622,6 +622,8 @@ public partial class SubscriptionsItem : Item {
 	
 	private System.Nullable<bool> _col50;
 	
+	private string _subscribedTo;
+	
 	#region Extensibility Method Definitions
 	partial void OnLoaded();
 	partial void OnValidate();
@@ -1331,6 +1333,20 @@ public partial class SubscriptionsItem : Item {
 			}
 		}
 	}
+	
+	[Microsoft.SharePoint.Linq.ColumnAttribute(Name="SubscribedTo", Storage="_subscribedTo", FieldType="Text")]
+	public string SubscribedTo {
+		get {
+			return this._subscribedTo;
+		}
+		set {
+			if ((value != this._subscribedTo)) {
+				this.OnPropertyChanging("SubscribedTo", this._subscribedTo);
+				this._subscribedTo = value;
+				this.OnPropertyChanged("SubscribedTo");
+			}
+		}
+	}
 }
 
 /// <summary>
@@ -1342,6 +1358,8 @@ public partial class SystemsItem : Item {
 	private string _description;
 	
 	private System.Nullable<double> _sortOrder;
+	
+	private string _trackID;
 	
 	private System.Nullable<Category> _category;
 	
@@ -1385,6 +1403,23 @@ public partial class SystemsItem : Item {
 				this.OnPropertyChanging("SortOrder", this._sortOrder);
 				this._sortOrder = value;
 				this.OnPropertyChanged("SortOrder");
+			}
+		}
+	}
+	
+	/// <summary>
+	/// Unique ID for this item - Used to track subscriptions
+	/// </summary>
+	[Microsoft.SharePoint.Linq.ColumnAttribute(Name="TrackID", Storage="_trackID", Required=true, FieldType="Text")]
+	public string TrackID {
+		get {
+			return this._trackID;
+		}
+		set {
+			if ((value != this._trackID)) {
+				this.OnPropertyChanging("TrackID", this._trackID);
+				this._trackID = value;
+				this.OnPropertyChanged("TrackID");
 			}
 		}
 	}

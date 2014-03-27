@@ -61,6 +61,7 @@ namespace Status.VisualWebPart1
                     dolbysystems[currentsystem].description = system.Description;
                     dolbysystems[currentsystem].id = (int)system.Id;
                     dolbysystems[currentsystem].sortorder = (int)system.SortOrder;
+                    dolbysystems[currentsystem].trackID = system.TrackID;
                     dolbysystems[currentsystem].currentstatus = 0;
 
                     dolbysystems[currentsystem].daystatus = new DayStatus[8];
@@ -175,6 +176,13 @@ namespace Status.VisualWebPart1
             writer.WriteBeginTag("script");
             writer.WriteAttribute("type", "text/javascript");
             writer.WriteAttribute("src", siteURL + "/scripts/jquery.qtip.min.js");
+            writer.Write(HtmlTextWriter.TagRightChar);
+            writer.WriteEndTag("script");
+
+            // Add SPServices javascript
+            writer.WriteBeginTag("script");
+            writer.WriteAttribute("type", "text/javascript");
+            writer.WriteAttribute("src", siteURL + "/scripts/jquery.SPServices-2014.01.min.js");
             writer.Write(HtmlTextWriter.TagRightChar);
             writer.WriteEndTag("script");
 
@@ -305,8 +313,8 @@ namespace Status.VisualWebPart1
                         if (s.daystatus[x].region != null) sb.Append(@"Region:" + s.daystatus[x].region + @"<BR><BR>");
 
                         
-                        sb.Append(s.daystatus[x].details);
-                        
+                        sb.Append(@"<i>" + s.daystatus[x].details + @"</i>");
+                        if (s.daystatus[x].trackingref != null) sb.Append(@"<BR>Tracked: <b>" + s.daystatus[x].trackingref + @"</b>");
 
                         sb.Append(@"</div>");
 
@@ -367,9 +375,8 @@ namespace Status.VisualWebPart1
         public double id;               // List ID
         public int sortorder;           // sort order
         public int currentstatus;       // Status now
+        public string trackID;          // Tracking ID for this system (used for subscriptions)
         public DayStatus[] daystatus;   // Statuses for particular days
-
-        
         
     }
 

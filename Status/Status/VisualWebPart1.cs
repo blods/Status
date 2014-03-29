@@ -26,19 +26,36 @@ namespace Status.VisualWebPart1
         public string stopImgURL;
         public string coneImgURL;
         public string warnImgURL;
-        
+        public string subscribedTo;         // What the current user has subscribed to
+
         protected override void CreateChildControls()
         {
             Control control = Page.LoadControl(_ascxPath);
             Controls.Add(control);
 
+
+            
+            
            // Communicate with SPMetal class
             using (StatusDataContext context = new StatusDataContext(SPContext.Current.Web.Url))
             {
+
+                // Now check the user so we now what to do with the check boxes
+                SPUser cuser = SPControl.GetContextWeb(Context).CurrentUser;
+                var userquery = from subscriptions in context.Subscriptions
+                            where subscriptions.Title == cuser.ToString()
+                            select subscriptions;
+                foreach (var subscriptions in userquery)
+                {
+                    subscribedTo = subscriptions.SubscribedTo;
+                }
+                if (subscribedTo == null) subscribedTo = "";  // May it an empty string if no value
+
                 var result = context.Systems.OrderBy(x => x.SortOrder); // Returns the systems sorted by sortorder
                 
                 siteURL = context.Web;                                  // Get the URL of the website (for adding references)
                 int systemcount = result.Count();                       // Number of systems in list
+
 
                 // Create the URLs to the images
                 tickImgURL = siteURL + "/icons/tick.png";
@@ -63,6 +80,17 @@ namespace Status.VisualWebPart1
                     dolbysystems[currentsystem].sortorder = (int)system.SortOrder;
                     dolbysystems[currentsystem].trackID = system.TrackID;
                     dolbysystems[currentsystem].currentstatus = 0;
+
+                    if (subscribedTo.Contains(@"""" + system.TrackID + @""""))
+                    {
+                        dolbysystems[currentsystem].subscribed = 1;
+                    }
+                    else
+                    {
+                        dolbysystems[currentsystem].subscribed = 0;
+
+                    }
+
 
                     dolbysystems[currentsystem].daystatus = new DayStatus[8];
                     for (int x = 0; x < 8; x++)
@@ -241,7 +269,9 @@ namespace Status.VisualWebPart1
 
 
                 // Do the System title
-                sb.AppendLine(@"<td valign=""middle"" style=""text-align: center; background-color: " + alternateshade + @";""><input name=""Checkbox1"" type=""checkbox"" /></td><td style=""background-color: " + alternateshade + @"""><strong>" + s.name + @"</strong></td>");
+                sb.AppendLine(@"<td valign=""middle"" style=""text-align: center; background-color: " + alternateshade + @";""><input name=""Checkbox1"" class=""" + s.trackID + @""" ") ;
+                if (s.subscribed==1) { sb.AppendLine(@" checked ");}
+                sb.AppendLine(@" type=""checkbox"" /></td><td style=""background-color: " + alternateshade + @"""><strong>" + s.name + @"</strong></td>");
 
                 for (int x = 0; x < 8; x++ )
                 {
@@ -341,7 +371,7 @@ namespace Status.VisualWebPart1
 
             // Wrote out the little bit of javascript
             
-            // Add jquery 1.7.2 from google
+            
             writer.WriteBeginTag("script");
             writer.WriteAttribute("language", "javascript");
             writer.WriteAttribute("type", "text/javascript");
@@ -361,11 +391,31 @@ namespace Status.VisualWebPart1
                 });
             ");
             writer.WriteEndTag("script");
+
+
             
+
+
+
+            // Check SPServices Loaded
+            /* Commented out for now
+            writer.WriteBeginTag("script");
+            writer.WriteAttribute("language", "javascript");
+            writer.WriteAttribute("type", "text/javascript");
+            writer.Write(HtmlTextWriter.TagRightChar);
+            writer.Write(@"$('document').ready(function() 
+                { 
+                    alert(""JQuery Working...."");
+                    alert($().SPServices.SPGetCurrentSite());
+                    alert($().SPServices.SPGetCurrentUser({fieldName: ""Name"", debug: false}))
+                });
+            ");
+            writer.WriteEndTag("script");
+            */
         }
     }
 
-
+    
     
     // This class holds the information for one system
     public class DolbySystem
@@ -376,6 +426,7 @@ namespace Status.VisualWebPart1
         public int sortorder;           // sort order
         public int currentstatus;       // Status now
         public string trackID;          // Tracking ID for this system (used for subscriptions)
+        public int subscribed;          // 1 if user subscribed 0 if not
         public DayStatus[] daystatus;   // Statuses for particular days
         
     }

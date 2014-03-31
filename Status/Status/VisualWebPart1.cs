@@ -40,10 +40,12 @@ namespace Status.VisualWebPart1
             using (StatusDataContext context = new StatusDataContext(SPContext.Current.Web.Url))
             {
 
-                // Now check the user so we now what to do with the check boxes
-                SPUser cuser = SPControl.GetContextWeb(Context).CurrentUser;
+                // Now check the user so we know what to do with the check boxes
+                SPUser cuser = SPControl.GetContextWeb(Context).CurrentUser; // This is the user including DOLBYNET\
+                
+                // Find the user in the list (after extracting the name only rs for example
                 var userquery = from subscriptions in context.Subscriptions
-                            where subscriptions.Title == cuser.ToString()
+                            where subscriptions.Title == cuser.ToString().Substring(cuser.ToString().IndexOf('\\')+1)
                             select subscriptions;
                 foreach (var subscriptions in userquery)
                 {
@@ -81,7 +83,7 @@ namespace Status.VisualWebPart1
                     dolbysystems[currentsystem].trackID = system.TrackID;
                     dolbysystems[currentsystem].currentstatus = 0;
 
-                    if (subscribedTo.Contains(@"""" + system.TrackID + @""""))
+                    if (subscribedTo.Contains(@";" + system.TrackID + @";"))
                     {
                         dolbysystems[currentsystem].subscribed = 1;
                     }
@@ -269,9 +271,9 @@ namespace Status.VisualWebPart1
 
 
                 // Do the System title
-                sb.AppendLine(@"<td valign=""middle"" style=""text-align: center; background-color: " + alternateshade + @";""><input name=""Checkbox1"" class=""" + s.trackID + @""" ") ;
+                sb.AppendLine(@"<td valign=""middle"" style=""text-align: center; background-color: " + alternateshade + @";""><input name=""Checkbox1"" class=""thecheckboxes"" ID=""" + s.trackID + @""" ") ;
                 if (s.subscribed==1) { sb.AppendLine(@" checked ");}
-                sb.AppendLine(@" type=""checkbox"" /></td><td style=""background-color: " + alternateshade + @"""><strong>" + s.name + @"</strong></td>");
+                sb.AppendLine(@" type=""checkbox""  onclick=""handlechange(this);"" /></td><td style=""background-color: " + alternateshade + @"""><strong>" + s.name + @"</strong></td>");
 
                 for (int x = 0; x < 8; x++ )
                 {
@@ -412,6 +414,46 @@ namespace Status.VisualWebPart1
             ");
             writer.WriteEndTag("script");
             */
+
+            writer.WriteBeginTag("script");
+            writer.WriteAttribute("language", "javascript");
+            writer.WriteAttribute("type", "text/javascript");
+            writer.Write(HtmlTextWriter.TagRightChar);
+            writer.Write(
+                @"function handlechange(cb)
+                {
+                    var subscriptions = """";
+                     debugger;
+                    // Get current user - but remove the DOLBYNET bit (note two backslashes = 1
+                    var username = $().SPServices.SPGetCurrentUser({fieldName: ""Name"", debug: false});
+                    var username = username.split(""\\"").pop();
+                    
+                   
+                    $().SPServices({
+                        operation: ""GetListItems"", 
+                        async: false, 
+                        listName: ""Subscriptions"", 
+                        CAMLViewFields: ""<ViewFields><FieldRef Name='Title' /><FieldRef Name='SubscribedTo' /></ViewFields>"",
+                        CAMLQuery: ""<Query><Where><Eq><FieldRef Name='Title' /><Value Type='Text'>rs</Value></Eq></Where></Query>"",
+                        completefunc: function (xData, Status) {
+                            alert(xData.responseText);
+                            $(xData.responseXML).SPFilterNode(""z:row"").each(function() {
+                                subscriptions = ($(this).attr('ows_SubscribedTo'));
+                            });
+                        }
+                    });
+                    
+                    if (!cb.checked) 
+                        alert(""unchecked"");
+                    else 
+                        alert(""checked"");
+                    alert(cb.id);
+                    
+
+                }");
+            writer.WriteEndTag("script");
+
+
         }
     }
 

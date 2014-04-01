@@ -30,6 +30,16 @@ public partial class StatusDataContext : Microsoft.SharePoint.Linq.DataContext {
 		}
 	}
 	
+	/// <summary>
+	/// Holds the notice message displayed at the top of the status page
+	/// </summary>
+	[Microsoft.SharePoint.Linq.ListAttribute(Name="Notice")]
+	public Microsoft.SharePoint.Linq.EntityList<NoticeItem> Notice {
+		get {
+			return this.GetList<NoticeItem>("Notice");
+		}
+	}
+	
 	[Microsoft.SharePoint.Linq.ListAttribute(Name="Outages")]
 	public Microsoft.SharePoint.Linq.EntityList<OutagesItem> Outages {
 		get {
@@ -87,6 +97,7 @@ public partial class StatusDataContext : Microsoft.SharePoint.Linq.DataContext {
 /// </summary>
 [Microsoft.SharePoint.Linq.ContentTypeAttribute(Name="Item", Id="0x01")]
 [Microsoft.SharePoint.Linq.DerivedEntityClassAttribute(Type=typeof(Document))]
+[Microsoft.SharePoint.Linq.DerivedEntityClassAttribute(Type=typeof(NoticeItem))]
 [Microsoft.SharePoint.Linq.DerivedEntityClassAttribute(Type=typeof(OutagesItem))]
 [Microsoft.SharePoint.Linq.DerivedEntityClassAttribute(Type=typeof(SubscriptionsItem))]
 [Microsoft.SharePoint.Linq.DerivedEntityClassAttribute(Type=typeof(SystemsItem))]
@@ -319,6 +330,55 @@ public partial class WikiPage : Document {
 		}
 		set {
 			throw new System.InvalidOperationException("Field Title was removed from content type Wiki Page.");
+		}
+	}
+}
+
+/// <summary>
+/// Create a new list item.
+/// </summary>
+[Microsoft.SharePoint.Linq.ContentTypeAttribute(Name="Item", Id="0x01", List="Notice")]
+public partial class NoticeItem : Item {
+	
+	private string _notice;
+	
+	private System.Nullable<bool> _display;
+	
+	#region Extensibility Method Definitions
+	partial void OnLoaded();
+	partial void OnValidate();
+	partial void OnCreated();
+	#endregion
+	
+	public NoticeItem() {
+		this.OnCreated();
+	}
+	
+	[Microsoft.SharePoint.Linq.ColumnAttribute(Name="Notice", Storage="_notice", FieldType="Note")]
+	public string Notice {
+		get {
+			return this._notice;
+		}
+		set {
+			if ((value != this._notice)) {
+				this.OnPropertyChanging("Notice", this._notice);
+				this._notice = value;
+				this.OnPropertyChanged("Notice");
+			}
+		}
+	}
+	
+	[Microsoft.SharePoint.Linq.ColumnAttribute(Name="Display", Storage="_display", FieldType="Boolean")]
+	public System.Nullable<bool> Display {
+		get {
+			return this._display;
+		}
+		set {
+			if ((value != this._display)) {
+				this.OnPropertyChanging("Display", this._display);
+				this._display = value;
+				this.OnPropertyChanged("Display");
+			}
 		}
 	}
 }

@@ -51,7 +51,7 @@ namespace Status.VisualWebPart1
                 {
                     subscribedTo = subscriptions.SubscribedTo;
                 }
-                if (subscribedTo == null) subscribedTo = "";  // May it an empty string if no value
+                if (subscribedTo == null) subscribedTo = "";  // Make it an empty string if no value
 
                 var result = context.Systems.OrderBy(x => x.SortOrder); // Returns the systems sorted by sortorder
                 
@@ -239,7 +239,7 @@ namespace Status.VisualWebPart1
             sb.AppendLine("<tr>");
 
             // Heading Row 
-            sb.AppendLine(@"<td style=""text-align: center; background-color: #909090""></td>"); // FIrst column for the check boxes
+            sb.AppendLine(@"<td style=""text-align: center; background-color: #909090; color: #FFFFFF""><strong>Alert</br>Me</strong></td>"); // FIrst column for the check boxes
             sb.AppendLine(@"<td style=""font-size: 12px; text-align: center; background-color: #909090; color: #FFFFFF""><strong>System</strong></td>");
 
             for (int x = 0; x < 8; x++)
@@ -399,22 +399,8 @@ namespace Status.VisualWebPart1
 
 
 
-            // Check SPServices Loaded
-            /* Commented out for now
-            writer.WriteBeginTag("script");
-            writer.WriteAttribute("language", "javascript");
-            writer.WriteAttribute("type", "text/javascript");
-            writer.Write(HtmlTextWriter.TagRightChar);
-            writer.Write(@"$('document').ready(function() 
-                { 
-                    alert(""JQuery Working...."");
-                    alert($().SPServices.SPGetCurrentSite());
-                    alert($().SPServices.SPGetCurrentUser({fieldName: ""Name"", debug: false}))
-                });
-            ");
-            writer.WriteEndTag("script");
-            */
 
+            // Called when a check box is clicked
             writer.WriteBeginTag("script");
             writer.WriteAttribute("language", "javascript");
             writer.WriteAttribute("type", "text/javascript");
@@ -423,10 +409,13 @@ namespace Status.VisualWebPart1
                 @"function handlechange(cb)
                 {
                     var subscriptions = """";
-                     debugger;
+                    var newsubscriptions = """"; 
+                    var existingid=0;
+                     
                     // Get current user - but remove the DOLBYNET bit (note two backslashes = 1
                     var username = $().SPServices.SPGetCurrentUser({fieldName: ""Name"", debug: false});
                     var username = username.split(""\\"").pop();
+                    var userexists = false;
                     
                    
                     $().SPServices({
@@ -434,20 +423,42 @@ namespace Status.VisualWebPart1
                         async: false, 
                         listName: ""Subscriptions"", 
                         CAMLViewFields: ""<ViewFields><FieldRef Name='Title' /><FieldRef Name='SubscribedTo' /></ViewFields>"",
-                        CAMLQuery: ""<Query><Where><Eq><FieldRef Name='Title' /><Value Type='Text'>rs</Value></Eq></Where></Query>"",
+                        CAMLQuery: ""<Query><Where><Eq><FieldRef Name='Title' /><Value Type='Text'>"" + username + ""</Value></Eq></Where></Query>"",
                         completefunc: function (xData, Status) {
-                            alert(xData.responseText);
+                            // alert(xData.responseText);
                             $(xData.responseXML).SPFilterNode(""z:row"").each(function() {
                                 subscriptions = ($(this).attr('ows_SubscribedTo'));
+                                existingid = ($(this).attr('ows_ID'));
                             });
                         }
                     });
                     
-                    if (!cb.checked) 
-                        alert(""unchecked"");
-                    else 
-                        alert(""checked"");
-                    alert(cb.id);
+                    // Loop around all the elements of my checkbox class and if checked add to the string
+                    var myElements = $("".thecheckboxes"");
+                    
+                    for (var i=0;i<myElements.length;i++) {
+                        if (myElements.eq(i).prop('checked') == true)
+                        {
+                            newsubscriptions = newsubscriptions + "";"" + myElements.eq(i).attr(""id"") + "";"";
+                        }
+                     
+                    }               
+
+                    //debugger;
+                    // If users in the subscription database, perform an update
+                    if (existingid > 0) {
+                        $().SPServices({
+                            operation: ""UpdateListItems"",
+                            async: false,
+                            batchCmd: ""Update"",
+                            listName: ""Subscriptions"",
+                            ID: """" + existingid.toString() + """",
+                            valuepairs: [[""SubscribedTo"", """" + newsubscriptions + """"]],
+                            completefunc: function (xData, Status) {
+                                //alert(xData.responseText);
+                            }
+                         });               
+                    }
                     
 
                 }");

@@ -122,10 +122,10 @@ namespace Status.VisualWebPart1
                 // Systems are all populated and the 8 status days populated with defaults
                 
                 // Time to look for outages to reflect in the data
-                // Return all outages from up to 10 days ago sorted by defcom (low to high)
+                // Return all outages from up to 10 days ago sorted by defcon (low to high)
                 var query = from outages in context.Outages
                             where outages.Start >= DateTime.Now.AddDays(-10)
-                            orderby outages.Defcom descending
+                            orderby outages.Defcon descending
                             select outages;
 
                 // Loop around each of the outages in the last 10 days and map to dolbysystems
@@ -157,7 +157,7 @@ namespace Status.VisualWebPart1
                                 else
                                 {
                                     // FOUND ONE
-                                    s.daystatus[x].status = Convert.ToInt32(outages.Defcom.ToString().Substring(outages.Defcom.ToString().Length -1));
+                                    s.daystatus[x].status = Convert.ToInt32(outages.Defcon.ToString().Substring(outages.Defcon.ToString().Length -1));
                                     s.daystatus[x].title = outages.Title;
                                     s.daystatus[x].details = outages.Details;
 
@@ -314,7 +314,7 @@ namespace Status.VisualWebPart1
                         {
                             sb.Append(@"<img src=""" + warnImgURL + @""" border=""0""> ");
                         }
-                        if (s.daystatus[x].status == 4)
+                        if (s.daystatus[x].status == 3)
                         {
                             sb.Append(@"<img src=""" + coneImgURL + @""" border=""0""> ");
                         }
@@ -459,7 +459,20 @@ namespace Status.VisualWebPart1
                             }
                          });               
                     }
+                    else {
+                        // User doesnt exist in subscriptions create a new entry
+                        $().SPServices({
+                            operation: ""UpdateListItems"",
+                            async: false,
+                            batchCmd: ""New"",
+                            listName: ""Subscriptions"",
+                            valuepairs: [[""Title"", """" + username + """"],[""SubscribedTo"", """" + newsubscriptions + """"]],
+                            completefunc: function (xData, Status) {
+                                //alert(xData.responseText);
+                            }
+                         });       
                     
+                    }
 
                 }");
             writer.WriteEndTag("script");
@@ -487,7 +500,7 @@ namespace Status.VisualWebPart1
     // This class represents the info for one specific day
     public class DayStatus
     {
-        public int status;          // Status for this particular time (defcom)
+        public int status;          // Status for this particular time (defcon)
         public string title;        // title for this outage
         public string impacted;     // impacted systems
         public string region;       // region impacted

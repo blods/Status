@@ -30,6 +30,16 @@ public partial class StatusDataContext : Microsoft.SharePoint.Linq.DataContext {
 		}
 	}
 	
+	/// <summary>
+	/// Holds the notice message displayed at the top of the status page
+	/// </summary>
+	[Microsoft.SharePoint.Linq.ListAttribute(Name="Notice")]
+	public Microsoft.SharePoint.Linq.EntityList<NoticeItem> Notice {
+		get {
+			return this.GetList<NoticeItem>("Notice");
+		}
+	}
+	
 	[Microsoft.SharePoint.Linq.ListAttribute(Name="Outages")]
 	public Microsoft.SharePoint.Linq.EntityList<OutagesItem> Outages {
 		get {
@@ -87,6 +97,7 @@ public partial class StatusDataContext : Microsoft.SharePoint.Linq.DataContext {
 /// </summary>
 [Microsoft.SharePoint.Linq.ContentTypeAttribute(Name="Item", Id="0x01")]
 [Microsoft.SharePoint.Linq.DerivedEntityClassAttribute(Type=typeof(Document))]
+[Microsoft.SharePoint.Linq.DerivedEntityClassAttribute(Type=typeof(NoticeItem))]
 [Microsoft.SharePoint.Linq.DerivedEntityClassAttribute(Type=typeof(OutagesItem))]
 [Microsoft.SharePoint.Linq.DerivedEntityClassAttribute(Type=typeof(SubscriptionsItem))]
 [Microsoft.SharePoint.Linq.DerivedEntityClassAttribute(Type=typeof(SystemsItem))]
@@ -326,6 +337,55 @@ public partial class WikiPage : Document {
 /// <summary>
 /// Create a new list item.
 /// </summary>
+[Microsoft.SharePoint.Linq.ContentTypeAttribute(Name="Item", Id="0x01", List="Notice")]
+public partial class NoticeItem : Item {
+	
+	private string _notice;
+	
+	private System.Nullable<bool> _display;
+	
+	#region Extensibility Method Definitions
+	partial void OnLoaded();
+	partial void OnValidate();
+	partial void OnCreated();
+	#endregion
+	
+	public NoticeItem() {
+		this.OnCreated();
+	}
+	
+	[Microsoft.SharePoint.Linq.ColumnAttribute(Name="Notice", Storage="_notice", FieldType="Note")]
+	public string Notice {
+		get {
+			return this._notice;
+		}
+		set {
+			if ((value != this._notice)) {
+				this.OnPropertyChanging("Notice", this._notice);
+				this._notice = value;
+				this.OnPropertyChanged("Notice");
+			}
+		}
+	}
+	
+	[Microsoft.SharePoint.Linq.ColumnAttribute(Name="Display", Storage="_display", FieldType="Boolean")]
+	public System.Nullable<bool> Display {
+		get {
+			return this._display;
+		}
+		set {
+			if ((value != this._display)) {
+				this.OnPropertyChanging("Display", this._display);
+				this._display = value;
+				this.OnPropertyChanged("Display");
+			}
+		}
+	}
+}
+
+/// <summary>
+/// Create a new list item.
+/// </summary>
 [Microsoft.SharePoint.Linq.ContentTypeAttribute(Name="Item", Id="0x01", List="Outages")]
 public partial class OutagesItem : Item {
 	
@@ -343,7 +403,7 @@ public partial class OutagesItem : Item {
 	
 	private System.Nullable<Region> _region;
 	
-	private System.Nullable<Defcom> _defcom;
+	private System.Nullable<Defcon> _defcon;
 	
 	private Microsoft.SharePoint.Linq.EntityRef<SystemsItem> _system;
 	
@@ -469,18 +529,18 @@ public partial class OutagesItem : Item {
 	}
 	
 	/// <summary>
-	/// 1 - Total Outage 2 - Partial Outage w Workaround 3 - Some Subsystems Impacted 4 - Planned Outage in Progress 
+	/// 1 - Total Outage 2 - Partial Outage 3 - Planned Outage in Progress
 	/// </summary>
-	[Microsoft.SharePoint.Linq.ColumnAttribute(Name="Defcom", Storage="_defcom", FieldType="Choice")]
-	public System.Nullable<Defcom> Defcom {
+	[Microsoft.SharePoint.Linq.ColumnAttribute(Name="Defcom", Storage="_defcon", FieldType="Choice")]
+	public System.Nullable<Defcon> Defcon {
 		get {
-			return this._defcom;
+			return this._defcon;
 		}
 		set {
-			if ((value != this._defcom)) {
-				this.OnPropertyChanging("Defcom", this._defcom);
-				this._defcom = value;
-				this.OnPropertyChanged("Defcom");
+			if ((value != this._defcon)) {
+				this.OnPropertyChanging("Defcon", this._defcon);
+				this._defcon = value;
+				this.OnPropertyChanged("Defcon");
 			}
 		}
 	}
@@ -686,7 +746,7 @@ public enum Region : int {
 	APAC = 8,
 }
 
-public enum Defcom : int {
+public enum Defcon : int {
 	
 	None = 0,
 	
@@ -700,9 +760,6 @@ public enum Defcom : int {
 	
 	[Microsoft.SharePoint.Linq.ChoiceAttribute(Value="3")]
 	_3 = 8,
-	
-	[Microsoft.SharePoint.Linq.ChoiceAttribute(Value="4")]
-	_4 = 16,
 }
 
 public enum Category : int {

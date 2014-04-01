@@ -403,7 +403,7 @@ public partial class OutagesItem : Item {
 	
 	private System.Nullable<Region> _region;
 	
-	private System.Nullable<Defcom> _defcom;
+	private System.Nullable<Defcon> _defcon;
 	
 	private Microsoft.SharePoint.Linq.EntityRef<SystemsItem> _system;
 	
@@ -529,18 +529,18 @@ public partial class OutagesItem : Item {
 	}
 	
 	/// <summary>
-	/// 1 - Total Outage 2 - Partial Outage w Workaround 3 - Some Subsystems Impacted 4 - Planned Outage in Progress 
+	/// 1 - Total Outage 2 - Partial Outage 3 - Planned Outage in Progress
 	/// </summary>
-	[Microsoft.SharePoint.Linq.ColumnAttribute(Name="Defcom", Storage="_defcom", FieldType="Choice")]
-	public System.Nullable<Defcom> Defcom {
+	[Microsoft.SharePoint.Linq.ColumnAttribute(Name="Defcom", Storage="_defcon", FieldType="Choice")]
+	public System.Nullable<Defcon> Defcon {
 		get {
-			return this._defcom;
+			return this._defcon;
 		}
 		set {
-			if ((value != this._defcom)) {
-				this.OnPropertyChanging("Defcom", this._defcom);
-				this._defcom = value;
-				this.OnPropertyChanged("Defcom");
+			if ((value != this._defcon)) {
+				this.OnPropertyChanging("Defcon", this._defcon);
+				this._defcon = value;
+				this.OnPropertyChanged("Defcon");
 			}
 		}
 	}
@@ -746,7 +746,7 @@ public enum Region : int {
 	APAC = 8,
 }
 
-public enum Defcom : int {
+public enum Defcon : int {
 	
 	None = 0,
 	
@@ -760,9 +760,6 @@ public enum Defcom : int {
 	
 	[Microsoft.SharePoint.Linq.ChoiceAttribute(Value="3")]
 	_3 = 8,
-	
-	[Microsoft.SharePoint.Linq.ChoiceAttribute(Value="4")]
-	_4 = 16,
 }
 
 public enum Category : int {

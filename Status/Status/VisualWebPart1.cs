@@ -164,11 +164,11 @@ namespace Status.VisualWebPart1
                                     // Handle an end date of null which means not set and so ongoing outage
                                     if (outages.End == null) { s.daystatus[x].end = DateTime.MaxValue;}
                                     else { s.daystatus[x].end = outages.End.Value; }
-                                   
-                                    s.daystatus[x].impacted = outages.ImpactedSystems;
-                                    s.daystatus[x].offices = outages.Offices;
-                                    s.daystatus[x].region = outages.Region.ToString();
+
+                                    s.daystatus[x].scope = outages.ScopeOfImpact;
+                                    s.daystatus[x].useraction = outages.UserActionRequired;
                                     s.daystatus[x].start = outages.Start.Value;
+                                    s.daystatus[x].update = outages.Update;
                                     s.daystatus[x].trackingref = outages.TrackingRef;
                                 }
                             }
@@ -327,22 +327,45 @@ namespace Status.VisualWebPart1
                         
                         // Build the tooptip here
                         sb.Append(@"<b>" + s.daystatus[x].title + @"</b><BR>");
-                        sb.Append(@"Start (PST): " + String.Format("{0:HH:mm}",s.daystatus[x].start) + @"<BR>");
-                      
+
+                        // Note: Even though time is correctly adjusted for users regional settings - the UTC always shows -7
+                        // So the below gets the users time offset to show the correct UTC
+
+                        var user = SPContext.Current.Web.CurrentUser;
+                        string userstz;
+                        if (user.RegionalSettings != null)
+                        {
+                            userstz = user.RegionalSettings.TimeZone.Description;
+                        }
+                        else
+                        {
+                            userstz = SPContext.Current.Web.RegionalSettings.TimeZone.Description;
+                        }
+                        sb.Append(@"<table>");
+                        sb.Append(@"<tr><td valign=""top"" align=""right""><font color=#6D6D6D>Start:</td><td>" + String.Format("{0:HH:mm}",s.daystatus[x].start) + @"</td></tr>");
+                        sb.Append(@"<tr><td valign=""top"" align=""right""><font color=#6D6D6D>End:</td><td>");
+
+                        
 
                         // Only show the end time if its not an ongoing outage
                         if (s.daystatus[x].end < DateTime.Now)
                         {
-                            sb.Append(@"End   (PST): " + String.Format("{0:HH:mm}", s.daystatus[x].end) + @"<BR>");
+                            sb.Append(String.Format("{0:HH:mm}", s.daystatus[x].end) + @"</td></tr>");
                         }
-                        else { sb.Append(@"ONGOING<BR>");
+                        else { sb.Append(@"ONGOING</td></tr>");
                         }
+                        sb.Append(@"<tr><td valign=""top"" align=""right""><font color=#6D6D6D>TZ:</td><td>" + userstz + @"</rd></tr>");
 
-                        sb.Append(@"TZ: " + s.daystatus[x].start.ToString("zzz") + @"<BR>");
-                        sb.Append(@"<BR>"); // Put a extrabreak before the next section
-                        if (s.daystatus[x].impacted != null) sb.Append(@"Impacted: " + s.daystatus[x].impacted + @"<BR>");
-                        if (s.daystatus[x].offices != null) sb.Append(@"Office:" + s.daystatus[x].offices + @"<BR>");
-                        if (s.daystatus[x].region != null) sb.Append(@"Region:" + s.daystatus[x].region + @"<BR><BR>");
+                        sb.Append(@"</table><BR>"); // Put a extrabreak before the next section
+
+ 
+
+                        sb.Append(@"<table>");
+                        
+                        if (s.daystatus[x].update != null) sb.Append(@"<tr><td valign=""top"" align=""right""><font color=#6D6D6D>Update:</td><td>" + s.daystatus[x].update + @"</td></tr>");
+                        if (s.daystatus[x].scope != null) sb.Append(@"<tr><td valign=""top"" align=""right""><font color=#6D6D6D>Scope:</td><td>" + s.daystatus[x].scope + @"</td></tr>");
+                        if (s.daystatus[x].useraction != null) sb.Append(@"<tr><td valign=""top"" align=""right""><font color=#6D6D6D>Action:</td><td>" + s.daystatus[x].useraction + @"</td></tr>");
+                        sb.Append(@"</table>");
 
                         
                         sb.Append(@"<i>" + s.daystatus[x].details + @"</i>");
@@ -444,7 +467,7 @@ namespace Status.VisualWebPart1
                      
                     }               
 
-                    //debugger;
+                   // debugger;
                     // If users in the subscription database, perform an update
                     if (existingid > 0) {
                         $().SPServices({
@@ -502,9 +525,9 @@ namespace Status.VisualWebPart1
     {
         public int status;          // Status for this particular time (defcon)
         public string title;        // title for this outage
-        public string impacted;     // impacted systems
-        public string region;       // region impacted
-        public string offices;      // offices impacted
+        public string update;       // Any recent updates
+        public string scope;        // Scope of the impact
+        public string useraction;   // Steps user should take
         public DateTime start;      // start time
         public DateTime end;        // end time
         public string details;      // details

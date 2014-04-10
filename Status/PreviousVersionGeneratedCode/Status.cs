@@ -389,19 +389,23 @@ public partial class NoticeItem : Item {
 [Microsoft.SharePoint.Linq.ContentTypeAttribute(Name="Item", Id="0x01", List="Outages")]
 public partial class OutagesItem : Item {
 	
-	private string _impactedSystems;
-	
-	private string _offices;
-	
 	private System.Nullable<System.DateTime> _start;
-	
-	private System.Nullable<System.DateTime> _end;
 	
 	private string _details;
 	
+	private string _scopeOfImpact;
+	
+	private string _userActionRequired;
+	
 	private string _trackingRef;
 	
-	private System.Nullable<Region> _region;
+	private System.Nullable<System.DateTime> _end;
+	
+	private string _update;
+	
+	private System.Nullable<bool> _activateEmails;
+	
+	private System.Nullable<double> _emailCount;
 	
 	private System.Nullable<Defcon> _defcon;
 	
@@ -421,40 +425,6 @@ public partial class OutagesItem : Item {
 		this.OnCreated();
 	}
 	
-	/// <summary>
-	/// Description of the sub category impacted
-	/// </summary>
-	[Microsoft.SharePoint.Linq.ColumnAttribute(Name="Subcategory", Storage="_impactedSystems", FieldType="Text")]
-	public string ImpactedSystems {
-		get {
-			return this._impactedSystems;
-		}
-		set {
-			if ((value != this._impactedSystems)) {
-				this.OnPropertyChanging("ImpactedSystems", this._impactedSystems);
-				this._impactedSystems = value;
-				this.OnPropertyChanged("ImpactedSystems");
-			}
-		}
-	}
-	
-	/// <summary>
-	/// Offices affected
-	/// </summary>
-	[Microsoft.SharePoint.Linq.ColumnAttribute(Name="Offices", Storage="_offices", FieldType="Text")]
-	public string Offices {
-		get {
-			return this._offices;
-		}
-		set {
-			if ((value != this._offices)) {
-				this.OnPropertyChanging("Offices", this._offices);
-				this._offices = value;
-				this.OnPropertyChanged("Offices");
-			}
-		}
-	}
-	
 	[Microsoft.SharePoint.Linq.ColumnAttribute(Name="Start", Storage="_start", Required=true, FieldType="DateTime")]
 	public System.Nullable<System.DateTime> Start {
 		get {
@@ -465,6 +435,68 @@ public partial class OutagesItem : Item {
 				this.OnPropertyChanging("Start", this._start);
 				this._start = value;
 				this.OnPropertyChanged("Start");
+			}
+		}
+	}
+	
+	[Microsoft.SharePoint.Linq.ColumnAttribute(Name="Details", Storage="_details", FieldType="Note")]
+	public string Details {
+		get {
+			return this._details;
+		}
+		set {
+			if ((value != this._details)) {
+				this.OnPropertyChanging("Details", this._details);
+				this._details = value;
+				this.OnPropertyChanged("Details");
+			}
+		}
+	}
+	
+	/// <summary>
+	/// The systems and regions or offices that are impacted by this outage
+	/// </summary>
+	[Microsoft.SharePoint.Linq.ColumnAttribute(Name="Scope_x0020_of_x0020_Impact", Storage="_scopeOfImpact", FieldType="Note")]
+	public string ScopeOfImpact {
+		get {
+			return this._scopeOfImpact;
+		}
+		set {
+			if ((value != this._scopeOfImpact)) {
+				this.OnPropertyChanging("ScopeOfImpact", this._scopeOfImpact);
+				this._scopeOfImpact = value;
+				this.OnPropertyChanged("ScopeOfImpact");
+			}
+		}
+	}
+	
+	/// <summary>
+	/// Steps that those impacted by the outage should take
+	/// </summary>
+	[Microsoft.SharePoint.Linq.ColumnAttribute(Name="User_x0020_Action_x0020_Required", Storage="_userActionRequired", FieldType="Note")]
+	public string UserActionRequired {
+		get {
+			return this._userActionRequired;
+		}
+		set {
+			if ((value != this._userActionRequired)) {
+				this.OnPropertyChanging("UserActionRequired", this._userActionRequired);
+				this._userActionRequired = value;
+				this.OnPropertyChanged("UserActionRequired");
+			}
+		}
+	}
+	
+	[Microsoft.SharePoint.Linq.ColumnAttribute(Name="Ticket", Storage="_trackingRef", FieldType="Text")]
+	public string TrackingRef {
+		get {
+			return this._trackingRef;
+		}
+		set {
+			if ((value != this._trackingRef)) {
+				this.OnPropertyChanging("TrackingRef", this._trackingRef);
+				this._trackingRef = value;
+				this.OnPropertyChanged("TrackingRef");
 			}
 		}
 	}
@@ -486,44 +518,53 @@ public partial class OutagesItem : Item {
 		}
 	}
 	
-	[Microsoft.SharePoint.Linq.ColumnAttribute(Name="Details", Storage="_details", FieldType="Note")]
-	public string Details {
+	/// <summary>
+	/// Update notifications
+	/// </summary>
+	[Microsoft.SharePoint.Linq.ColumnAttribute(Name="Update", Storage="_update", FieldType="Note")]
+	public string Update {
 		get {
-			return this._details;
+			return this._update;
 		}
 		set {
-			if ((value != this._details)) {
-				this.OnPropertyChanging("Details", this._details);
-				this._details = value;
-				this.OnPropertyChanged("Details");
+			if ((value != this._update)) {
+				this.OnPropertyChanging("Update", this._update);
+				this._update = value;
+				this.OnPropertyChanged("Update");
 			}
 		}
 	}
 	
-	[Microsoft.SharePoint.Linq.ColumnAttribute(Name="Ticket", Storage="_trackingRef", FieldType="Text")]
-	public string TrackingRef {
+	/// <summary>
+	/// When set to yes an email will be sent and then this field set to no
+	/// </summary>
+	[Microsoft.SharePoint.Linq.ColumnAttribute(Name="EmailsSend", Storage="_activateEmails", FieldType="Boolean")]
+	public System.Nullable<bool> ActivateEmails {
 		get {
-			return this._trackingRef;
+			return this._activateEmails;
 		}
 		set {
-			if ((value != this._trackingRef)) {
-				this.OnPropertyChanging("TrackingRef", this._trackingRef);
-				this._trackingRef = value;
-				this.OnPropertyChanged("TrackingRef");
+			if ((value != this._activateEmails)) {
+				this.OnPropertyChanging("ActivateEmails", this._activateEmails);
+				this._activateEmails = value;
+				this.OnPropertyChanged("ActivateEmails");
 			}
 		}
 	}
 	
-	[Microsoft.SharePoint.Linq.ColumnAttribute(Name="Region", Storage="_region", FieldType="MultiChoice")]
-	public System.Nullable<Region> Region {
+	/// <summary>
+	/// Number of emails sent in the last post
+	/// </summary>
+	[Microsoft.SharePoint.Linq.ColumnAttribute(Name="EmailsSent", Storage="_emailCount", FieldType="Number")]
+	public System.Nullable<double> EmailCount {
 		get {
-			return this._region;
+			return this._emailCount;
 		}
 		set {
-			if ((value != this._region)) {
-				this.OnPropertyChanging("Region", this._region);
-				this._region = value;
-				this.OnPropertyChanged("Region");
+			if ((value != this._emailCount)) {
+				this.OnPropertyChanging("EmailCount", this._emailCount);
+				this._emailCount = value;
+				this.OnPropertyChanged("EmailCount");
 			}
 		}
 	}
@@ -727,23 +768,6 @@ public partial class SystemsItem : Item {
 			e.Item.System = null;
 		}
 	}
-}
-
-[System.FlagsAttribute()]
-public enum Region : int {
-	
-	None = 0,
-	
-	Invalid = 1,
-	
-	[Microsoft.SharePoint.Linq.ChoiceAttribute(Value="AMER")]
-	AMER = 2,
-	
-	[Microsoft.SharePoint.Linq.ChoiceAttribute(Value="EMEA")]
-	EMEA = 4,
-	
-	[Microsoft.SharePoint.Linq.ChoiceAttribute(Value="APAC")]
-	APAC = 8,
 }
 
 public enum Defcon : int {

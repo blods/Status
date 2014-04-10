@@ -75,12 +75,19 @@
     <Reference Include="System.Web.Extensions" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="NewOutages\NewOutages.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Status.cs" />
     <Compile Include="Status\VisualWebPart1.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Features\Feature2\Feature2.feature">
+      <FeatureId>{92905ad5-8432-46d2-8455-a3f7d188af23}</FeatureId>
+    </None>
     <None Include="key.snk" />
+    <None Include="NewOutages\SharePointProjectItem.spdata">
+      <SharePointProjectItemId>{6edc1d96-2ef7-4852-9297-97f2d3eed55b}</SharePointProjectItemId>
+    </None>
     <None Include="Prebuild.bat" />
     <None Include="Status\SharePointProjectItem.spdata">
       <SharePointProjectItemId>{e9e32812-cd4f-45a0-8b39-4ecde20274ef}</SharePointProjectItemId>
@@ -89,6 +96,12 @@
     <None Include="Status\Elements.xml" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Features\Feature2\Feature2.Template.xml">
+      <DependentUpon>Feature2.feature</DependentUpon>
+    </Content>
+    <Content Include="NewOutages\Elements.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Status\VisualWebPart1UserControl.ascx">
       <SubType>ASPXCodeBehind</SubType>
     </Content>

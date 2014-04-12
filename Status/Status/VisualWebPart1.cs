@@ -18,6 +18,7 @@ namespace Status.VisualWebPart1
     {
         // Visual Studio might automatically update this path when you change the Visual Web Part project item.
         private const string _ascxPath = @"~/_CONTROLTEMPLATES/Status/Status/VisualWebPart1UserControl.ascx";
+        public Classifications[] classifications;
         public DolbySystem[] dolbysystems;
         public string siteURL;
 
@@ -40,7 +41,7 @@ namespace Status.VisualWebPart1
             using (StatusDataContext context = new StatusDataContext(SPContext.Current.Web.Url))
             {
 
-                // Now check the user so we know what to do with the check boxes
+                // Get the current user and populate what they've subscribed to in subscribedTo
                 SPUser cuser = SPControl.GetContextWeb(Context).CurrentUser; // This is the user including DOLBYNET\
                 
                 // Find the user in the list (after extracting the name only rs for example
@@ -53,11 +54,18 @@ namespace Status.VisualWebPart1
                 }
                 if (subscribedTo == null) subscribedTo = "";  // Make it an empty string if no value
 
+                // Get all of the systems sorted by sort order into result
                 var result = context.Systems.OrderBy(x => x.SortOrder); // Returns the systems sorted by sortorder
-                
-                siteURL = context.Web;                                  // Get the URL of the website (for adding references)
-                int systemcount = result.Count();                       // Number of systems in list
 
+                // Get all of the classifications sorted by sort order into result
+                var classresult = context.Classification.OrderBy(x => x.SortOrder);
+
+                // Get the sites URL so we can safely reference the jquery libraries                
+                siteURL = context.Web;
+                
+                // Count number of systems and classifications  
+                int systemcount = result.Count();
+                int classificationcount = classresult.Count();
 
                 // Create the URLs to the images
                 tickImgURL = siteURL + "/icons/tick.png";
@@ -65,18 +73,32 @@ namespace Status.VisualWebPart1
                 coneImgURL = siteURL + "/icons/cone.png";
                 warnImgURL = siteURL + "/icons/warn.png";
 
-                // Create an array of systems to store the info
+                // Create an array of systems & classifications
+                classifications = new Classifications[classificationcount];
                 dolbysystems = new DolbySystem[systemcount];
 
-                int currentsystem = 0;  // start at 0 and loop through each
-                
+                // Populate the classifications array
+                int currentclassification = 0;
+                foreach (ClassificationItem classification in classresult)
+                {
+                    classifications[currentclassification] = new Classifications(); // Create a new classification for the array
+
+                    classifications[currentclassification].title = classification.Title;
+                    classifications[currentclassification].description = "";    // In case its empty
+                    classifications[currentclassification].description = classification.Description;
+
+                    currentclassification++;    // Go on to the next item
+                }
+
                 // Populate the array with the list of systems
+                int currentsystem = 0;  // start at 0 and loop through each
                 foreach (SystemsItem system in result)
                 {
                     dolbysystems[currentsystem] = new DolbySystem();
 
                     dolbysystems[currentsystem].description = "";
                     dolbysystems[currentsystem].name = system.Title;
+                    dolbysystems[currentsystem].classification = system.Classification.Title;
                     dolbysystems[currentsystem].description = system.Description;
                     dolbysystems[currentsystem].id = (int)system.Id;
                     dolbysystems[currentsystem].sortorder = (int)system.SortOrder;
@@ -118,11 +140,8 @@ namespace Status.VisualWebPart1
                     currentsystem++;    // Move onto the next system
                 }
 
-
-                // Systems are all populated and the 8 status days populated with defaults
-                
-                // Time to look for outages to reflect in the data
-                // Return all outages from up to 10 days ago sorted by defcon (low to high)
+           
+                // Time to look for outages to reflect in the data - Return all outages from up to 10 days ago sorted by defcon (low to high)
                 var query = from outages in context.Outages
                             where outages.Start >= DateTime.Now.AddDays(-10)
                             orderby outages.Defcon descending
@@ -222,11 +241,6 @@ namespace Status.VisualWebPart1
             // Start the table
             Table infoTable = new Table();
             infoTable.Attributes.Add("border", "1px");
-            
-
-            
-  
-            
 
             //Render the table
             infoTable.RenderControl(writer);
@@ -250,141 +264,157 @@ namespace Status.VisualWebPart1
             // End a row
             sb.AppendLine("</tr>");
 
+
+
             int alternaterows = 0;              // Used to keep track and flip colors 
-            
             string alternateshade = "#DBE8EA";  // This is for the shading of the first 3 columns
             string alternateshade2 = "#F5FAFA"; // This is for the shading for the columns 4 and up - but is either on or off
 
-            // Now do the other rows
-            foreach (DolbySystem s in dolbysystems)
+            foreach (Classifications c in classifications)
             {
                 sb.AppendLine("<tr>");
+                sb.AppendLine(@"<td></td>"); 
+                sb.AppendLine(@"<td style=""font-size: 12px; text-align: center; background-color: #909090; color: #FFFFFF""><strong>" + c.title + @"</strong></td>");
 
-                // Flip between the two colors for the first 3 columns
-                if (alternaterows == 0) {
-                    alternateshade = "#DBE8EA";
-                    alternaterows = 1;
-                } else {
-                    alternateshade = "#F5FAFA";
-                    alternaterows = 0;
+                for (int x = 0; x < 8; x++)
+                {
+                    sb.AppendLine(@"<td></td>");
                 }
 
 
-                // Do the System title
-                sb.AppendLine(@"<td valign=""middle"" style=""text-align: center; background-color: " + alternateshade + @";""><input name=""Checkbox1"" class=""thecheckboxes"" ID=""" + s.trackID + @""" ") ;
-                if (s.subscribed==1) { sb.AppendLine(@" checked ");}
-                sb.AppendLine(@" type=""checkbox""  onclick=""handlechange(this);"" /></td><td style=""background-color: " + alternateshade + @"""><strong>" + s.name + @"</strong></td>");
 
-                for (int x = 0; x < 8; x++ )
+
+                // Now loop through the systems
+                foreach (DolbySystem s in dolbysystems)
                 {
-                    sb.Append(@"<td style=""text-align: center;");
-
-                    //If this is 0 then we need to pic from the alternaterows colors
-                    if (x == 0)
+                    if (s.classification == c.title)
                     {
-                        sb.Append(@" background-color: " + alternateshade + @";"">");
-                    }
-                    else
-                    {
-                        // Only add the shading for column 4 and up every other cycle - otherwise its clear
-                        if (alternaterows == 1) {
-                            sb.Append(@" background-color: " + alternateshade2 + @";"">");
-                        }
-                        else {  // No shading here
-                            sb.Append(@""">");
-                        }
-                    }
-                    
-                    // Now we can add the symbol
-                    if (s.daystatus[x].status == 0)
-                    {
-                        sb.Append(@"<img src=""" + tickImgURL + @"""/></td>");
-                    }
-                    else
-                    {
-                        // Needs a tooltip
-                        sb.Append(@"<div class=""hasTooltip""><a href=""#tip"">");
+                        sb.AppendLine("<tr>");
 
-                        // Now add the image URL
-                        if (s.daystatus[x].status == 1)
+                        // Flip between the two colors for the first 3 columns
+                        if (alternaterows == 0)
                         {
-                            sb.Append(@"<img src=""" + stopImgURL + @""" border=""0""> ");
-                        }
-                        if (s.daystatus[x].status == 2)
-                        {
-                            sb.Append(@"<img src=""" + warnImgURL + @""" border=""0""> ");
-                        }
-                        if (s.daystatus[x].status == 3)
-                        {
-                            sb.Append(@"<img src=""" + coneImgURL + @""" border=""0""> ");
-                        }
-
-                        
-                        sb.Append(@"</a></div>");   // Closes out the anchor and the div tag for the tooltip
-
-                        // Now add the tooltip text
-                        sb.Append(@"<div class=""hidden"">"); // Which should initially be hidden
-                        
-                        // Build the tooptip here
-                        sb.Append(@"<b>" + s.daystatus[x].title + @"</b><BR>");
-
-                        // Note: Even though time is correctly adjusted for users regional settings - the UTC always shows -7
-                        // So the below gets the users time offset to show the correct UTC
-
-                        var user = SPContext.Current.Web.CurrentUser;
-                        string userstz;
-                        if (user.RegionalSettings != null)
-                        {
-                            userstz = user.RegionalSettings.TimeZone.Description;
+                            alternateshade = "#DBE8EA";
+                            alternaterows = 1;
                         }
                         else
                         {
-                            userstz = SPContext.Current.Web.RegionalSettings.TimeZone.Description;
+                            alternateshade = "#F5FAFA";
+                            alternaterows = 0;
                         }
-                        sb.Append(@"<table>");
-                        sb.Append(@"<tr><td valign=""top"" align=""right""><font color=#6D6D6D>Start:</td><td>" + String.Format("{0:HH:mm}",s.daystatus[x].start) + @"</td></tr>");
-                        sb.Append(@"<tr><td valign=""top"" align=""right""><font color=#6D6D6D>End:</td><td>");
 
-                        
+                        // Do the Check box and System title
+                        sb.AppendLine(@"<td valign=""middle"" style=""text-align: center; background-color: " + alternateshade + @";""><input name=""Checkbox1"" class=""thecheckboxes"" ID=""" + s.trackID + @""" ");
+                        if (s.subscribed == 1) { sb.AppendLine(@" checked "); }
+                        sb.AppendLine(@" type=""checkbox""  onclick=""handlechange(this);"" /></td><td style=""background-color: " + alternateshade + @"""><strong>" + s.name + @"</strong></td>");
 
-                        // Only show the end time if its not an ongoing outage
-                        if (s.daystatus[x].end < DateTime.Now)
+                        for (int x = 0; x < 8; x++)
                         {
-                            sb.Append(String.Format("{0:HH:mm}", s.daystatus[x].end) + @"</td></tr>");
+                            sb.Append(@"<td style=""text-align: center;");
+
+                            //If this is 0 then we need to pic from the alternaterows colors
+                            if (x == 0)
+                            {
+                                sb.Append(@" background-color: " + alternateshade + @";"">");
+                            }
+                            else
+                            {
+                                // Only add the shading for column 4 and up every other cycle - otherwise its clear
+                                if (alternaterows == 1)
+                                {
+                                    sb.Append(@" background-color: " + alternateshade2 + @";"">");
+                                }
+                                else
+                                {  // No shading here
+                                    sb.Append(@""">");
+                                }
+                            }
+
+                            // Now we can add the symbol
+                            if (s.daystatus[x].status == 0)
+                            {
+                                sb.Append(@"<img src=""" + tickImgURL + @"""/></td>");
+                            }
+                            else
+                            {
+                                // Needs a tooltip
+                                sb.Append(@"<div class=""hasTooltip""><a href=""#tip"">");
+
+                                // Now add the image URL
+                                if (s.daystatus[x].status == 1)
+                                {
+                                    sb.Append(@"<img src=""" + stopImgURL + @""" border=""0""> ");
+                                }
+                                if (s.daystatus[x].status == 2)
+                                {
+                                    sb.Append(@"<img src=""" + warnImgURL + @""" border=""0""> ");
+                                }
+                                if (s.daystatus[x].status == 3)
+                                {
+                                    sb.Append(@"<img src=""" + coneImgURL + @""" border=""0""> ");
+                                }
+
+                                sb.Append(@"</a></div>");   // Closes out the anchor and the div tag for the tooltip
+
+                                // Now add the tooltip text
+                                sb.Append(@"<div class=""hidden"">"); // Which should initially be hidden
+
+                                // Build the tooptip here
+                                sb.Append(@"<b>" + s.daystatus[x].title + @"</b><BR>");
+
+                                // Note: Even though time is correctly adjusted for users regional settings - the UTC always shows -7
+                                // So the below gets the users time offset to show the correct UTC
+
+                                var user = SPContext.Current.Web.CurrentUser;
+                                string userstz;
+                                if (user.RegionalSettings != null)
+                                {
+                                    userstz = user.RegionalSettings.TimeZone.Description;
+                                }
+                                else
+                                {
+                                    userstz = SPContext.Current.Web.RegionalSettings.TimeZone.Description;
+                                }
+                                sb.Append(@"<table>");
+                                sb.Append(@"<tr><td valign=""top"" align=""right""><font color=#6D6D6D>Start:</td><td>" + String.Format("{0:HH:mm}", s.daystatus[x].start) + @"</td></tr>");
+                                sb.Append(@"<tr><td valign=""top"" align=""right""><font color=#6D6D6D>End:</td><td>");
+
+                                // Only show the end time if its not an ongoing outage
+                                if (s.daystatus[x].end < DateTime.Now)
+                                {
+                                    sb.Append(String.Format("{0:HH:mm}", s.daystatus[x].end) + @"</td></tr>");
+                                }
+                                else
+                                {
+                                    sb.Append(@"ONGOING</td></tr>");
+                                }
+                                sb.Append(@"<tr><td valign=""top"" align=""right""><font color=#6D6D6D>TZ:</td><td>" + userstz + @"</rd></tr>");
+
+                                sb.Append(@"</table><BR>"); // Put a extrabreak before the next section
+
+                                sb.Append(@"<table>");
+
+                                if (s.daystatus[x].update != null) sb.Append(@"<tr><td valign=""top"" align=""right""><font color=#6D6D6D>Update:</td><td>" + s.daystatus[x].update + @"</td></tr>");
+                                if (s.daystatus[x].scope != null) sb.Append(@"<tr><td valign=""top"" align=""right""><font color=#6D6D6D>Scope:</td><td>" + s.daystatus[x].scope + @"</td></tr>");
+                                if (s.daystatus[x].useraction != null) sb.Append(@"<tr><td valign=""top"" align=""right""><font color=#6D6D6D>Action:</td><td>" + s.daystatus[x].useraction + @"</td></tr>");
+                                sb.Append(@"</table>");
+
+
+                                sb.Append(@"<i>" + s.daystatus[x].details + @"</i>");
+                                if (s.daystatus[x].trackingref != null) sb.Append(@"<BR>Tracked: <b>" + s.daystatus[x].trackingref + @"</b>");
+
+                                sb.Append(@"</div>");
+
+
+                                // Now close out the cell
+                                sb.Append(@"</td>");
+
+                            }
                         }
-                        else { sb.Append(@"ONGOING</td></tr>");
-                        }
-                        sb.Append(@"<tr><td valign=""top"" align=""right""><font color=#6D6D6D>TZ:</td><td>" + userstz + @"</rd></tr>");
-
-                        sb.Append(@"</table><BR>"); // Put a extrabreak before the next section
-
- 
-
-                        sb.Append(@"<table>");
-                        
-                        if (s.daystatus[x].update != null) sb.Append(@"<tr><td valign=""top"" align=""right""><font color=#6D6D6D>Update:</td><td>" + s.daystatus[x].update + @"</td></tr>");
-                        if (s.daystatus[x].scope != null) sb.Append(@"<tr><td valign=""top"" align=""right""><font color=#6D6D6D>Scope:</td><td>" + s.daystatus[x].scope + @"</td></tr>");
-                        if (s.daystatus[x].useraction != null) sb.Append(@"<tr><td valign=""top"" align=""right""><font color=#6D6D6D>Action:</td><td>" + s.daystatus[x].useraction + @"</td></tr>");
-                        sb.Append(@"</table>");
-
-                        
-                        sb.Append(@"<i>" + s.daystatus[x].details + @"</i>");
-                        if (s.daystatus[x].trackingref != null) sb.Append(@"<BR>Tracked: <b>" + s.daystatus[x].trackingref + @"</b>");
-
-                        sb.Append(@"</div>");
-
-
-                        // Now close out the cell
-                        sb.Append(@"</td>");
-
+                        sb.AppendLine("</tr>");
                     }
-
-                    
-                }
-
-
-                sb.AppendLine("</tr>");
-            }
+                } // Looping systems here
+            } // Looping classification here
 
 
 
@@ -417,12 +447,6 @@ namespace Status.VisualWebPart1
             ");
             writer.WriteEndTag("script");
 
-
-            
-
-
-
-
             // Called when a check box is clicked
             writer.WriteBeginTag("script");
             writer.WriteAttribute("language", "javascript");
@@ -434,7 +458,9 @@ namespace Status.VisualWebPart1
                     var subscriptions = """";
                     var newsubscriptions = """"; 
                     var existingid=0;
-                     
+                    
+
+ 
                     // Get current user - but remove the DOLBYNET bit (note two backslashes = 1
                     var username = $().SPServices.SPGetCurrentUser({fieldName: ""Name"", debug: false});
                     var username = username.split(""\\"").pop();
@@ -497,6 +523,7 @@ namespace Status.VisualWebPart1
                     
                     }
 
+
                 }");
             writer.WriteEndTag("script");
 
@@ -505,12 +532,20 @@ namespace Status.VisualWebPart1
     }
 
     
+    // This class holds the classifications for the systems
+    public class Classifications
+    {
+        public string title;            // Classification name
+        public int sortorder;           // Sort order
+        public string description;      // Description
+    }
     
     // This class holds the information for one system
     public class DolbySystem
     {
         public string name;             // name of the system
         public string description;      // description
+        public string classification;   // Class of system
         public double id;               // List ID
         public int sortorder;           // sort order
         public int currentstatus;       // Status now

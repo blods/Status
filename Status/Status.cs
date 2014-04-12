@@ -23,6 +23,16 @@ public partial class StatusDataContext : Microsoft.SharePoint.Linq.DataContext {
 		this.OnCreated();
 	}
 	
+	/// <summary>
+	/// Lists the class of system
+	/// </summary>
+	[Microsoft.SharePoint.Linq.ListAttribute(Name="Classification")]
+	public Microsoft.SharePoint.Linq.EntityList<ClassificationItem> Classification {
+		get {
+			return this.GetList<ClassificationItem>("Classification");
+		}
+	}
+	
 	[Microsoft.SharePoint.Linq.ListAttribute(Name="Icons")]
 	public Microsoft.SharePoint.Linq.EntityList<Document> Icons {
 		get {
@@ -96,6 +106,7 @@ public partial class StatusDataContext : Microsoft.SharePoint.Linq.DataContext {
 /// Create a new list item.
 /// </summary>
 [Microsoft.SharePoint.Linq.ContentTypeAttribute(Name="Item", Id="0x01")]
+[Microsoft.SharePoint.Linq.DerivedEntityClassAttribute(Type=typeof(ClassificationItem))]
 [Microsoft.SharePoint.Linq.DerivedEntityClassAttribute(Type=typeof(Document))]
 [Microsoft.SharePoint.Linq.DerivedEntityClassAttribute(Type=typeof(NoticeItem))]
 [Microsoft.SharePoint.Linq.DerivedEntityClassAttribute(Type=typeof(OutagesItem))]
@@ -330,6 +341,91 @@ public partial class WikiPage : Document {
 		}
 		set {
 			throw new System.InvalidOperationException("Field Title was removed from content type Wiki Page.");
+		}
+	}
+}
+
+/// <summary>
+/// Create a new list item.
+/// </summary>
+[Microsoft.SharePoint.Linq.ContentTypeAttribute(Name="Item", Id="0x01", List="Classification")]
+public partial class ClassificationItem : Item {
+	
+	private string _description;
+	
+	private System.Nullable<double> _sortOrder;
+	
+	private Microsoft.SharePoint.Linq.EntitySet<SystemsItem> _systemsItem;
+	
+	#region Extensibility Method Definitions
+	partial void OnLoaded();
+	partial void OnValidate();
+	partial void OnCreated();
+	#endregion
+	
+	public ClassificationItem() {
+		this._systemsItem = new Microsoft.SharePoint.Linq.EntitySet<SystemsItem>();
+		this._systemsItem.OnSync += new System.EventHandler<Microsoft.SharePoint.Linq.AssociationChangedEventArgs<SystemsItem>>(this.OnSystemsItemSync);
+		this._systemsItem.OnChanged += new System.EventHandler(this.OnSystemsItemChanged);
+		this._systemsItem.OnChanging += new System.EventHandler(this.OnSystemsItemChanging);
+		this.OnCreated();
+	}
+	
+	[Microsoft.SharePoint.Linq.ColumnAttribute(Name="Description", Storage="_description", FieldType="Note")]
+	public string Description {
+		get {
+			return this._description;
+		}
+		set {
+			if ((value != this._description)) {
+				this.OnPropertyChanging("Description", this._description);
+				this._description = value;
+				this.OnPropertyChanged("Description");
+			}
+		}
+	}
+	
+	[Microsoft.SharePoint.Linq.ColumnAttribute(Name="SortOrder", Storage="_sortOrder", FieldType="Number")]
+	public System.Nullable<double> SortOrder {
+		get {
+			return this._sortOrder;
+		}
+		set {
+			if ((value != this._sortOrder)) {
+				this.OnPropertyChanging("SortOrder", this._sortOrder);
+				this._sortOrder = value;
+				this.OnPropertyChanged("SortOrder");
+			}
+		}
+	}
+	
+	/// <summary>
+	/// Class of system
+	/// </summary>
+	[Microsoft.SharePoint.Linq.AssociationAttribute(Name="Class", Storage="_systemsItem", ReadOnly=true, MultivalueType=Microsoft.SharePoint.Linq.AssociationType.Backward, List="Systems")]
+	public Microsoft.SharePoint.Linq.EntitySet<SystemsItem> SystemsItem {
+		get {
+			return this._systemsItem;
+		}
+		set {
+			this._systemsItem.Assign(value);
+		}
+	}
+	
+	private void OnSystemsItemChanging(object sender, System.EventArgs e) {
+		this.OnPropertyChanging("SystemsItem", this._systemsItem.Clone());
+	}
+	
+	private void OnSystemsItemChanged(object sender, System.EventArgs e) {
+		this.OnPropertyChanged("SystemsItem");
+	}
+	
+	private void OnSystemsItemSync(object sender, Microsoft.SharePoint.Linq.AssociationChangedEventArgs<SystemsItem> e) {
+		if ((Microsoft.SharePoint.Linq.AssociationChangedState.Added == e.State)) {
+			e.Item.Classification = this;
+		}
+		else {
+			e.Item.Classification = null;
 		}
 	}
 }
@@ -635,7 +731,7 @@ public partial class SubscriptionsItem : Item {
 		this.OnCreated();
 	}
 	
-	[Microsoft.SharePoint.Linq.ColumnAttribute(Name="SubscribedTo", Storage="_subscribedTo", FieldType="Text")]
+	[Microsoft.SharePoint.Linq.ColumnAttribute(Name="SubscribedTo", Storage="_subscribedTo", FieldType="Note")]
 	public string SubscribedTo {
 		get {
 			return this._subscribedTo;
@@ -666,6 +762,8 @@ public partial class SystemsItem : Item {
 	
 	private Microsoft.SharePoint.Linq.EntitySet<OutagesItem> _outagesItem;
 	
+	private Microsoft.SharePoint.Linq.EntityRef<ClassificationItem> _classification;
+	
 	#region Extensibility Method Definitions
 	partial void OnLoaded();
 	partial void OnValidate();
@@ -677,6 +775,10 @@ public partial class SystemsItem : Item {
 		this._outagesItem.OnSync += new System.EventHandler<Microsoft.SharePoint.Linq.AssociationChangedEventArgs<OutagesItem>>(this.OnOutagesItemSync);
 		this._outagesItem.OnChanged += new System.EventHandler(this.OnOutagesItemChanged);
 		this._outagesItem.OnChanging += new System.EventHandler(this.OnOutagesItemChanging);
+		this._classification = new Microsoft.SharePoint.Linq.EntityRef<ClassificationItem>();
+		this._classification.OnSync += new System.EventHandler<Microsoft.SharePoint.Linq.AssociationChangedEventArgs<ClassificationItem>>(this.OnClassificationSync);
+		this._classification.OnChanged += new System.EventHandler(this.OnClassificationChanged);
+		this._classification.OnChanging += new System.EventHandler(this.OnClassificationChanging);
 		this.OnCreated();
 	}
 	
@@ -752,6 +854,19 @@ public partial class SystemsItem : Item {
 		}
 	}
 	
+	/// <summary>
+	/// Class of system
+	/// </summary>
+	[Microsoft.SharePoint.Linq.AssociationAttribute(Name="Class", Storage="_classification", MultivalueType=Microsoft.SharePoint.Linq.AssociationType.Single, List="Classification")]
+	public ClassificationItem Classification {
+		get {
+			return this._classification.GetEntity();
+		}
+		set {
+			this._classification.SetEntity(value);
+		}
+	}
+	
 	private void OnOutagesItemChanging(object sender, System.EventArgs e) {
 		this.OnPropertyChanging("OutagesItem", this._outagesItem.Clone());
 	}
@@ -766,6 +881,23 @@ public partial class SystemsItem : Item {
 		}
 		else {
 			e.Item.System = null;
+		}
+	}
+	
+	private void OnClassificationChanging(object sender, System.EventArgs e) {
+		this.OnPropertyChanging("Classification", this._classification.Clone());
+	}
+	
+	private void OnClassificationChanged(object sender, System.EventArgs e) {
+		this.OnPropertyChanged("Classification");
+	}
+	
+	private void OnClassificationSync(object sender, Microsoft.SharePoint.Linq.AssociationChangedEventArgs<ClassificationItem> e) {
+		if ((Microsoft.SharePoint.Linq.AssociationChangedState.Added == e.State)) {
+			e.Item.SystemsItem.Add(this);
+		}
+		else {
+			e.Item.SystemsItem.Remove(this);
 		}
 	}
 }

@@ -27,6 +27,14 @@ namespace Status.VisualWebPart1
         public string stopImgURL;
         public string coneImgURL;
         public string warnImgURL;
+        public string tickImgfadeURL;
+        public string stopImgfadeURL;
+        public string coneImgfadeURL;
+        public string warnImgfadeURL;
+        public string trianglerightURL;
+        public string triangledownURL;
+
+
         public string subscribedTo;         // What the current user has subscribed to
 
         protected override void CreateChildControls()
@@ -72,6 +80,15 @@ namespace Status.VisualWebPart1
                 stopImgURL = siteURL + "/icons/stop.png";
                 coneImgURL = siteURL + "/icons/cone.png";
                 warnImgURL = siteURL + "/icons/warn.png";
+
+                tickImgfadeURL = siteURL + "/icons/tickfade.png";
+                stopImgfadeURL = siteURL + "/icons/stopfade.png";
+                coneImgfadeURL = siteURL + "/icons/conefade.png";
+                warnImgfadeURL = siteURL + "/icons/warnfade.png";
+
+                triangledownURL = siteURL + "/icons/greentriangledown.png";
+                trianglerightURL = siteURL + "/icons/greentriangleright.png";
+
 
                 // Create an array of systems & classifications
                 classifications = new Classifications[classificationcount];
@@ -246,15 +263,15 @@ namespace Status.VisualWebPart1
             infoTable.RenderControl(writer);
 
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine(@"<table align=""center"" style=""border: 1px solid #D4D0C8; width: 100%"">");
+            sb.AppendLine(@"<table class=""detail"" align=""center"" style=""border: 1px solid #D4D0C8; width: 100%"">");
             sb.AppendLine("<tbody>");
 
             // Start a row
-            sb.AppendLine("<tr>");
+            sb.AppendLine(@"<tr class=""parent"">");
 
             // Heading Row 
-            sb.AppendLine(@"<td style=""text-align: center; background-color: #909090; color: #FFFFFF""><strong>Alert</br>Me</strong></td>"); // FIrst column for the check boxes
-            sb.AppendLine(@"<td style=""font-size: 12px; text-align: center; background-color: #909090; color: #FFFFFF""><strong>System</strong></td>");
+            sb.AppendLine(@"<td style=""text-align: center; background-color: #909090; color: #FFFFFF""><strong>System</strong></td>"); // First column 
+            sb.AppendLine(@"<td style=""font-size: 12px; text-align: center; background-color: #909090; color: #FFFFFF""><strong>Alert</strong></td>");
 
             for (int x = 0; x < 8; x++)
             {
@@ -272,14 +289,67 @@ namespace Status.VisualWebPart1
 
             foreach (Classifications c in classifications)
             {
-                sb.AppendLine("<tr>");
-                sb.AppendLine(@"<td></td>"); 
-                sb.AppendLine(@"<td style=""font-size: 12px; text-align: center; background-color: #909090; color: #FFFFFF""><strong>" + c.title + @"</strong></td>");
+                sb.AppendLine(@"<tr class=""parent"">");
 
+                sb.AppendLine(@"<td width=""200px"" style=""font-size: 12px; text-align: right; background-color: #909090; color: #FFFFFF""><strong>" + c.title + @" </strong><img src=" + trianglerightURL + @"> </img></td>");
+                sb.AppendLine(@"<td width=""50px""></td>"); 
+
+
+
+                // Now we're doing the 8 days of classification
                 for (int x = 0; x < 8; x++)
                 {
-                    sb.AppendLine(@"<td></td>");
-                }
+                    sb.Append(@"<td style=""text-align: center;");
+
+                    //If this is 0 then we need to pic from the alternaterows colors
+                    if (x == 0)
+                    {
+                        sb.Append(@" background-color: " + alternateshade + @";"">");
+                    }
+                    else
+                    {
+                        // Only add the shading for column 4 and up every other cycle - otherwise its clear
+                        if (alternaterows == 1)
+                        {
+                            sb.Append(@" background-color: " + alternateshade2 + @";"">");
+                        }
+                        else
+                        {  // No shading here
+                            sb.Append(@""">");
+                        }
+                     }
+
+                    // Work out the rolled up status for this classification
+                    int classstatus = 0;   // Default to checked
+
+                    foreach (DolbySystem s in dolbysystems)
+                    {
+                        if (s.classification == c.title)
+                        {
+                            if (s.daystatus[x].status > 0) classstatus = s.daystatus[x].status;
+                        }
+                    }
+
+                     // Now we can add the symbol
+                     if (classstatus == 0) sb.Append(@"<img src=""" + tickImgfadeURL + @""" border=""0""></td>");
+                     if (classstatus == 1) sb.Append(@"<img src=""" + stopImgfadeURL + @""" border=""0""></td>");
+                     if (classstatus == 2) sb.Append(@"<img src=""" + warnImgfadeURL + @""" border=""0""></td>");
+                     if (classstatus == 3) sb.Append(@"<img src=""" + coneImgfadeURL + @""" border=""0""></td>");
+                     
+
+                        
+                      
+                        
+                 }
+
+                sb.AppendLine("</tr>");
+
+
+
+
+
+
+
 
 
 
@@ -289,7 +359,7 @@ namespace Status.VisualWebPart1
                 {
                     if (s.classification == c.title)
                     {
-                        sb.AppendLine("<tr>");
+                        sb.AppendLine(@"<tr class=""child"">");
 
                         // Flip between the two colors for the first 3 columns
                         if (alternaterows == 0)
@@ -304,9 +374,11 @@ namespace Status.VisualWebPart1
                         }
 
                         // Do the Check box and System title
+                        sb.AppendLine(@"<td style=""text-align: right; background-color: " + alternateshade + @"""><strong>" + s.name + @"</strong></td>");
                         sb.AppendLine(@"<td valign=""middle"" style=""text-align: center; background-color: " + alternateshade + @";""><input name=""Checkbox1"" class=""thecheckboxes"" ID=""" + s.trackID + @""" ");
                         if (s.subscribed == 1) { sb.AppendLine(@" checked "); }
-                        sb.AppendLine(@" type=""checkbox""  onclick=""handlechange(this);"" /></td><td style=""background-color: " + alternateshade + @"""><strong>" + s.name + @"</strong></td>");
+                        sb.AppendLine(@" type=""checkbox""  onclick=""handlechange(this);"" /></td>");
+
 
                         for (int x = 0; x < 8; x++)
                         {
@@ -446,6 +518,28 @@ namespace Status.VisualWebPart1
                 });
             ");
             writer.WriteEndTag("script");
+
+            // Handles the collapsing
+            writer.WriteBeginTag("script");
+            writer.WriteAttribute("language", "javascript");
+            writer.WriteAttribute("type", "text/javascript");
+            writer.Write(HtmlTextWriter.TagRightChar);
+            writer.Write(@"$(document).ready(function() {
+            $('table.detail').each(function() {
+                var $table = $(this);
+                $table.find('.parent').click(function() {
+                    //$childRows.hide();
+                    $(this).nextUntil('.parent').toggle();
+                });
+
+                var $childRows = $table.find('tbody tr').not ('.parent').hide();
+                });
+            });
+            ");
+
+
+            writer.WriteEndTag("script");
+
 
             // Called when a check box is clicked
             writer.WriteBeginTag("script");

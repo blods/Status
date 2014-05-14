@@ -271,7 +271,6 @@ namespace Status.VisualWebPart1
 
             // Heading Row 
             sb.AppendLine(@"<td style=""text-align: center; background-color: #909090; color: #FFFFFF""><strong>System</strong></td>"); // First column 
-            sb.AppendLine(@"<td style=""font-size: 12px; text-align: center; background-color: #909090; color: #FFFFFF""><strong>Alert</strong></td>");
 
             for (int x = 0; x < 8; x++)
             {
@@ -283,16 +282,32 @@ namespace Status.VisualWebPart1
 
 
 
-            int alternaterows = 0;              // Used to keep track and flip colors 
-            string alternateshade = "#DBE8EA";  // This is for the shading of the first 3 columns
-            string alternateshade2 = "#F5FAFA"; // This is for the shading for the columns 4 and up - but is either on or off
+            int alternaterows = 0;              // Used to keep track and flip colors on systems
+            int alternateclass = 0;             // Used to keep track and flip colors on classes
+
+            string alternateshade = "#FFFFCC";  // This is for the shading of the first 3 columns
+            string alternateshade2 = "#F2FCCA"; // This is for the shading for the columns 4 and up - but is either on or off
+            string alternatecshade = "#DBE8EA";
+            string alternatecshade2 = "#F5FAFA";
+
+            // Note first columns alternate between #DBE8EA and 
+            // Rest of the columns alternate between #F5FAFA and #FFFFFF (or off)
 
             foreach (Classifications c in classifications)
             {
                 sb.AppendLine(@"<tr class=""parent"">");
 
-                sb.AppendLine(@"<td width=""200px"" style=""font-size: 12px; text-align: right; background-color: #909090; color: #FFFFFF""><strong>" + c.title + @" </strong><img src=" + trianglerightURL + @"> </img></td>");
-                sb.AppendLine(@"<td width=""50px""></td>"); 
+                if (alternateclass == 0)
+                {
+                    alternatecshade = "#DBE8EA";
+                    alternateclass = 1;
+                }
+                else
+                {
+                    alternatecshade = "#F5FAFA";
+                    alternateclass = 0;
+                }
+                sb.AppendLine(@"<td width=""200px"" style=""text-align: right; background-color: " + alternatecshade + @"; color: #575757""><strong>" + c.title + @" </strong><img src=" + trianglerightURL + @"> </img></td>");
 
 
 
@@ -304,14 +319,14 @@ namespace Status.VisualWebPart1
                     //If this is 0 then we need to pic from the alternaterows colors
                     if (x == 0)
                     {
-                        sb.Append(@" background-color: " + alternateshade + @";"">");
+                        sb.Append(@" background-color: " + alternatecshade + @";"">");
                     }
                     else
                     {
                         // Only add the shading for column 4 and up every other cycle - otherwise its clear
                         if (alternaterows == 1)
                         {
-                            sb.Append(@" background-color: " + alternateshade2 + @";"">");
+                            sb.Append(@" background-color: " + alternatecshade2 + @";"">");
                         }
                         else
                         {  // No shading here
@@ -362,20 +377,20 @@ namespace Status.VisualWebPart1
                         sb.AppendLine(@"<tr class=""child"">");
 
                         // Flip between the two colors for the first 3 columns
-                        if (alternaterows == 0)
+                        if (alternateclass == 0)
                         {
-                            alternateshade = "#DBE8EA";
+                            alternateshade = "#FFFFCC";
                             alternaterows = 1;
                         }
                         else
                         {
-                            alternateshade = "#F5FAFA";
+                            alternateshade = "#F2FCCA";
                             alternaterows = 0;
                         }
 
                         // Do the Check box and System title
-                        sb.AppendLine(@"<td style=""text-align: right; background-color: " + alternateshade + @"""><strong>" + s.name + @"</strong></td>");
-                        sb.AppendLine(@"<td valign=""middle"" style=""text-align: center; background-color: " + alternateshade + @";""><input name=""Checkbox1"" class=""thecheckboxes"" ID=""" + s.trackID + @""" ");
+                        sb.AppendLine(@"<td style=""text-align: right; background-color: " + alternateshade + @"""><strong>" + s.name + @"</strong><input name=""Checkbox1"" class=""thecheckboxes"" ID=""" + s.trackID + @""" ");
+                        
                         if (s.subscribed == 1) { sb.AppendLine(@" checked "); }
                         sb.AppendLine(@" type=""checkbox""  onclick=""handlechange(this);"" /></td>");
 
@@ -432,7 +447,7 @@ namespace Status.VisualWebPart1
                                 sb.Append(@"<div class=""hidden"">"); // Which should initially be hidden
 
                                 // Build the tooptip here
-                                sb.Append(@"<b>" + s.daystatus[x].title + @"</b><BR>");
+                                sb.Append(@"<b>" + s.daystatus[x].title + @"</b><BR><BR>");
 
                                 // Note: Even though time is correctly adjusted for users regional settings - the UTC always shows -7
                                 // So the below gets the users time offset to show the correct UTC
@@ -447,29 +462,29 @@ namespace Status.VisualWebPart1
                                 {
                                     userstz = SPContext.Current.Web.RegionalSettings.TimeZone.Description;
                                 }
-                                sb.Append(@"<table>");
-                                sb.Append(@"<tr><td valign=""top"" align=""right""><font color=#6D6D6D>Start:</td><td>" + String.Format("{0:HH:mm}", s.daystatus[x].start) + @"</td></tr>");
-                                sb.Append(@"<tr><td valign=""top"" align=""right""><font color=#6D6D6D>End:</td><td>");
+                         
+                                sb.Append(@"<span style=""color:cadetblue"">Start: <b>" + String.Format("{0:HH:mm}", s.daystatus[x].start) + @"</b>  ");
+                                sb.Append(@"End: <b>");
 
                                 // Only show the end time if its not an ongoing outage
                                 if (s.daystatus[x].end < DateTime.Now)
                                 {
-                                    sb.Append(String.Format("{0:HH:mm}", s.daystatus[x].end) + @"</td></tr>");
+                                    sb.Append(String.Format("{0:HH:mm}", s.daystatus[x].end) + @"</b><BR></span>");
                                 }
                                 else
                                 {
-                                    sb.Append(@"ONGOING</td></tr>");
+                                    sb.Append(@"ONGOING</b><BR></span>");
                                 }
-                                sb.Append(@"<tr><td valign=""top"" align=""right""><font color=#6D6D6D>TZ:</td><td>" + userstz + @"</rd></tr>");
+                                sb.Append(@"<font color=#6D6D6D>" + userstz + @"<BR>");
 
-                                sb.Append(@"</table><BR>"); // Put a extrabreak before the next section
+                                sb.Append(@"<BR>"); // Put a extrabreak before the next section
 
-                                sb.Append(@"<table>");
+                                
 
-                                if (s.daystatus[x].update != null) sb.Append(@"<tr><td valign=""top"" align=""right""><font color=#6D6D6D>Update:</td><td>" + s.daystatus[x].update + @"</td></tr>");
-                                if (s.daystatus[x].scope != null) sb.Append(@"<tr><td valign=""top"" align=""right""><font color=#6D6D6D>Scope:</td><td>" + s.daystatus[x].scope + @"</td></tr>");
-                                if (s.daystatus[x].useraction != null) sb.Append(@"<tr><td valign=""top"" align=""right""><font color=#6D6D6D>Action:</td><td>" + s.daystatus[x].useraction + @"</td></tr>");
-                                sb.Append(@"</table>");
+                                if (s.daystatus[x].update != null) sb.Append(@"<span style=""color:CornflowerBlue""><b>Update</b><BR>" + s.daystatus[x].update + @"<BR><BR></span>");
+                                if (s.daystatus[x].scope != null) sb.Append(@"<span style=""color:DarkBlue""><b>Scope</b><BR>" + s.daystatus[x].scope + @"<BR><BR></span>");
+                                if (s.daystatus[x].useraction != null) sb.Append(@"<span style=""color:DodgerBlue""><b>Action</b><BR>" + s.daystatus[x].useraction + @"<BR></span>");
+                                
 
 
                                 sb.Append(@"<i>" + s.daystatus[x].details + @"</i>");

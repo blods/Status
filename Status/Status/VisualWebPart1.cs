@@ -307,7 +307,7 @@ namespace Status.VisualWebPart1
                     alternatecshade = "#F5FAFA";
                     alternateclass = 0;
                 }
-                sb.AppendLine(@"<td width=""200px"" style=""text-align: right; background-color: " + alternatecshade + @"; color: #575757""><strong>" + c.title + @" </strong><img src=" + trianglerightURL + @"> </img></td>");
+                sb.AppendLine(@"<td width=""200px"" style=""text-align: right; background-color: " + alternatecshade + @"; color: #575757""><strong>" + c.title + @" </strong><img src=" + trianglerightURL + @" title=""right"" id=""triangle""> </img></td>");
 
 
 
@@ -541,10 +541,21 @@ namespace Status.VisualWebPart1
             writer.Write(HtmlTextWriter.TagRightChar);
             writer.Write(@"$(document).ready(function() {
             $('table.detail').each(function() {
+
                 var $table = $(this);
                 $table.find('.parent').click(function() {
                     //$childRows.hide();
                     $(this).nextUntil('.parent').toggle();
+
+                    // This switches the green triangles
+                    if (($('#triangle',this).attr(""src"")) == """ + trianglerightURL + @""")
+                    {
+                        $('#triangle', this).attr(""src"", """ + triangledownURL + @""");
+                    }
+                    else {
+                         $('#triangle', this).attr(""src"", """ + trianglerightURL + @""");
+                    }
+
                 });
 
                 var $childRows = $table.find('tbody tr').not ('.parent').hide();
@@ -552,8 +563,10 @@ namespace Status.VisualWebPart1
             });
             ");
 
-
             writer.WriteEndTag("script");
+
+
+
 
 
             // Called when a check box is clicked

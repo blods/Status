@@ -272,7 +272,7 @@ namespace Status.VisualWebPart1
             // Heading Row 
             sb.AppendLine(@"<td style=""text-align: center; background-color: #909090; color: #FFFFFF""><strong>System</strong></td>"); // First column 
 
-            for (int x = 0; x < 8; x++)
+            for (int x = 7; x >= 0; x--)
             {
                 sb.AppendLine(@"<td style=""font-size: 12px; text-align: center; background-color: #909090; color: #FFFFFF""><strong>" + dolbysystems[0].daystatus[x].daytext + "</strong></td>");                    
             }
@@ -308,11 +308,11 @@ namespace Status.VisualWebPart1
                     alternateclass = 0;
                 }
                 
-                sb.AppendLine(@"<td width=""280px"" style=""text-align: right; background-color: " + alternatecshade + @"; color: #575757""><strong>" + c.title + @" </strong><img src=" + trianglerightURL + @" title=""Toggle expand or collapse"" id=""triangle""> </img></td>");
+                sb.AppendLine(@"<td width=""280px"" title=""" + c.description + @""" style=""text-align: right; background-color: " + alternatecshade + @"; color: #575757""><strong>" + c.title + @" </strong><img src=" + trianglerightURL + @" title=""Toggle expand or collapse"" id=""triangle""> </img></td>");
 
 
                 // Now we're doing the 8 days of classification
-                for (int x = 0; x < 8; x++)
+                for (int x = 7; x >= 0; x--)
                 {
                     sb.Append(@"<td style=""text-align: center;");
 
@@ -390,13 +390,13 @@ namespace Status.VisualWebPart1
 
                         // Do the Check box and System title
                         //sb.AppendLine(@"<td style=""text-align: right; background-color: " + alternateshade + @"""><div title=""" + s.description + @"""><strong>" + s.name + @"</strong></div><div title=""Select to receive E-Mail status updates for this system""><input name=""Checkbox1"" class=""thecheckboxes"" ID=""" + s.trackID + @"</div>"" ");
-                        sb.AppendLine(@"<td title=""" + s.description + @""" style=""text-align: right; background-color: " + alternateshade + @"""><strong>" + s.name + @"</strong><input name=""Checkbox1"" class=""thecheckboxes"" title=""Select to receive E-Mail status updates for this system"" ID=""" + s.trackID + @""" ");
+                        sb.AppendLine(@"<td title=""" + s.description + @""" style=""text-align: right; background-color: " + alternateshade + @""">" + s.name + @"<input name=""Checkbox1"" class=""thecheckboxes"" title=""Select to receive E-Mail status updates for this system"" ID=""" + s.trackID + @""" ");
                         
                         if (s.subscribed == 1) { sb.AppendLine(@" checked "); }
                         sb.AppendLine(@" type=""checkbox""  onclick=""handlechange(this);"" /></td>");
 
 
-                        for (int x = 0; x < 8; x++)
+                        for (int x = 7; x >= 0; x--)
                         {
                             sb.Append(@"<td style=""text-align: center;");
 

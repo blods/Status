@@ -307,8 +307,8 @@ namespace Status.VisualWebPart1
                     alternatecshade = "#F5FAFA";
                     alternateclass = 0;
                 }
-                sb.AppendLine(@"<td width=""200px"" style=""text-align: right; background-color: " + alternatecshade + @"; color: #575757""><strong>" + c.title + @" </strong><img src=" + trianglerightURL + @" title=""right"" id=""triangle""> </img></td>");
-
+                
+                sb.AppendLine(@"<td width=""280px"" style=""text-align: right; background-color: " + alternatecshade + @"; color: #575757""><strong>" + c.title + @" </strong><img src=" + trianglerightURL + @" title=""Toggle expand or collapse"" id=""triangle""> </img></td>");
 
 
                 // Now we're doing the 8 days of classification
@@ -389,7 +389,8 @@ namespace Status.VisualWebPart1
                         }
 
                         // Do the Check box and System title
-                        sb.AppendLine(@"<td style=""text-align: right; background-color: " + alternateshade + @"""><strong>" + s.name + @"</strong><input name=""Checkbox1"" class=""thecheckboxes"" ID=""" + s.trackID + @""" ");
+                        //sb.AppendLine(@"<td style=""text-align: right; background-color: " + alternateshade + @"""><div title=""" + s.description + @"""><strong>" + s.name + @"</strong></div><div title=""Select to receive E-Mail status updates for this system""><input name=""Checkbox1"" class=""thecheckboxes"" ID=""" + s.trackID + @"</div>"" ");
+                        sb.AppendLine(@"<td title=""" + s.description + @""" style=""text-align: right; background-color: " + alternateshade + @"""><strong>" + s.name + @"</strong><input name=""Checkbox1"" class=""thecheckboxes"" title=""Select to receive E-Mail status updates for this system"" ID=""" + s.trackID + @""" ");
                         
                         if (s.subscribed == 1) { sb.AppendLine(@" checked "); }
                         sb.AppendLine(@" type=""checkbox""  onclick=""handlechange(this);"" /></td>");

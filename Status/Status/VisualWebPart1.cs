@@ -144,7 +144,7 @@ namespace Status.VisualWebPart1
                         {
                             dolbysystems[currentsystem].daystatus[x].periodStart = DateTime.Now;
                             dolbysystems[currentsystem].daystatus[x].periodEnd = DateTime.Now;
-                            dolbysystems[currentsystem].daystatus[x].daytext = "Now";
+                            dolbysystems[currentsystem].daystatus[x].daytext = "Current<BR>Status";
                         }
                         else
                         {   // Looks complicated but this is just working out a clean start and end fo each day so 12AM to 11:59:59PM 
@@ -262,8 +262,17 @@ namespace Status.VisualWebPart1
             //Render the table
             infoTable.RenderControl(writer);
 
+            
+           
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine(@"<table class=""detail"" align=""center"" style=""border: 1px solid #D4D0C8; width: 100%"">");
+
+            // Add some buttons temporarily
+            sb.Append(@"<input id=""btnShowHistory"" type=""button"" value=""Show History""/>");
+            sb.Append(@"<input id=""btnHideHistory"" type=""button"" value=""Hide History""/>");
+            sb.Append(@"<input id=""btnExpandAll"" type=""button"" value=""Expand All""/>");
+            sb.Append(@"<input id=""btnCollapseAll"" type=""button"" value=""Collapse All""/>");
+
+            sb.AppendLine(@"<BR><table class=""detail"" align=""left"" style=""border: 1px solid #D4D0C8"">");
             sb.AppendLine("<tbody>");
 
             // Start a row
@@ -274,7 +283,9 @@ namespace Status.VisualWebPart1
 
             for (int x = 7; x >= 0; x--)
             {
-                sb.AppendLine(@"<td style=""font-size: 12px; text-align: center; background-color: #909090; color: #FFFFFF""><strong>" + dolbysystems[0].daystatus[x].daytext + "</strong></td>");                    
+                sb.AppendLine(@"<td ");
+                if (x>0) {sb.Append(@"class=""history"" ");}    // if this isnt now then assign the class history
+                sb.Append(@"style=""font-size: 12px; text-align: center; background-color: #909090; color: #FFFFFF""><strong>" + dolbysystems[0].daystatus[x].daytext + "</strong></td>");                    
             }
 
             // End a row
@@ -308,13 +319,16 @@ namespace Status.VisualWebPart1
                     alternateclass = 0;
                 }
                 
-                sb.AppendLine(@"<td width=""280px"" title=""" + c.description + @""" style=""text-align: right; background-color: " + alternatecshade + @"; color: #575757""><strong>" + c.title + @" </strong><img src=" + trianglerightURL + @" title=""Toggle expand or collapse"" id=""triangle""> </img></td>");
+                sb.AppendLine(@"<td width=""280px"" title=""" + c.description + @""" style=""cursor:context-menu; text-align: right; background-color: " + alternatecshade + @"; color: #575757""><strong>" + c.title + @" </strong><img src=" + trianglerightURL + @" title=""Toggle expand or collapse"" id=""triangle""> </img></td>");
 
 
                 // Now we're doing the 8 days of classification
                 for (int x = 7; x >= 0; x--)
                 {
-                    sb.Append(@"<td style=""text-align: center;");
+                    sb.Append(@"<td ");
+                    if (x>0) sb.Append(@"class=""history"" ");
+
+                    sb.Append(@"width=""40px"" style=""text-align: center;");
 
                     //If this is 0 then we need to pic from the alternaterows colors
                     if (x == 0)
@@ -360,15 +374,6 @@ namespace Status.VisualWebPart1
                 sb.AppendLine("</tr>");
 
 
-
-
-
-
-
-
-
-
-
                 // Now loop through the systems
                 foreach (DolbySystem s in dolbysystems)
                 {
@@ -390,7 +395,7 @@ namespace Status.VisualWebPart1
 
                         // Do the Check box and System title
                         //sb.AppendLine(@"<td style=""text-align: right; background-color: " + alternateshade + @"""><div title=""" + s.description + @"""><strong>" + s.name + @"</strong></div><div title=""Select to receive E-Mail status updates for this system""><input name=""Checkbox1"" class=""thecheckboxes"" ID=""" + s.trackID + @"</div>"" ");
-                        sb.AppendLine(@"<td title=""" + s.description + @""" style=""text-align: right; background-color: " + alternateshade + @""">" + s.name + @"<input name=""Checkbox1"" class=""thecheckboxes"" title=""Select to receive E-Mail status updates for this system"" ID=""" + s.trackID + @""" ");
+                        sb.AppendLine(@"<td title=""" + s.description + @""" style=""cursor:default; text-align: right; background-color: " + alternateshade + @""">" + s.name + @"<input name=""Checkbox1"" class=""thecheckboxes"" title=""Select to receive E-Mail status updates for this system"" ID=""" + s.trackID + @""" ");
                         
                         if (s.subscribed == 1) { sb.AppendLine(@" checked "); }
                         sb.AppendLine(@" type=""checkbox""  onclick=""handlechange(this);"" /></td>");
@@ -398,7 +403,9 @@ namespace Status.VisualWebPart1
 
                         for (int x = 7; x >= 0; x--)
                         {
-                            sb.Append(@"<td style=""text-align: center;");
+                            sb.Append(@"<td ");
+                            if (x > 0) sb.Append(@"class=""history"" ");
+                            sb.Append(@"style=""text-align: center;");
 
                             //If this is 0 then we need to pic from the alternaterows colors
                             if (x == 0)
@@ -560,10 +567,71 @@ namespace Status.VisualWebPart1
                 });
 
                 var $childRows = $table.find('tbody tr').not ('.parent').hide();
+
+                $('#btnCollapseAll').click(function() {
+                    $childRows.hide();
+
+                    $('img').each(function(i) {
+                        if (this.src == """ + triangledownURL + @""") {
+                            this.src = """ + trianglerightURL + @""";
+                        }
+                    });
                 });
+
+                $('#btnExpandAll').click(function() {
+                    $childRows.show();
+
+                    $('img').each(function(i) {
+                        if (this.src == """ + trianglerightURL + @""") {
+                            this.src = """ + triangledownURL + @""";
+                        }
+                    });
+                  
+                    
+
+                });
+
+
+                });
+    
+
+                $("".history"").hide();
+                $('table.detail').attr('width','330px');
+
+                
             });
             ");
 
+            writer.WriteEndTag("script");
+
+
+            // Called on Hide History
+            writer.WriteBeginTag("script");
+            writer.WriteAttribute("language", "javascript");
+            writer.WriteAttribute("type", "text/javascript");
+            writer.Write(HtmlTextWriter.TagRightChar);
+            writer.Write(
+                @"$(document).ready(function() {
+                $('#btnHideHistory').click(function() {
+                $("".history"").hide('fast');
+                $('table.detail').attr('width','330px');
+                });
+                });");
+            writer.WriteEndTag("script");
+
+            // Called on Show History
+            writer.WriteBeginTag("script");
+            writer.WriteAttribute("language", "javascript");
+            writer.WriteAttribute("type", "text/javascript");
+            writer.Write(HtmlTextWriter.TagRightChar);
+            writer.Write(
+                @"$(document).ready(function() {
+                $('#btnShowHistory').click(function() {
+                $("".history"").show('fast');
+                $('table.detail').attr('width','100%');                
+                });
+                });");
+               
             writer.WriteEndTag("script");
 
 

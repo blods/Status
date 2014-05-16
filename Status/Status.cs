@@ -764,6 +764,10 @@ public partial class SystemsItem : Item {
 	
 	private Microsoft.SharePoint.Linq.EntityRef<ClassificationItem> _classification;
 	
+	private System.Nullable<int> _ownerId;
+	
+	private string _ownerImnName;
+	
 	#region Extensibility Method Definitions
 	partial void OnLoaded();
 	partial void OnValidate();
@@ -864,6 +868,40 @@ public partial class SystemsItem : Item {
 		}
 		set {
 			this._classification.SetEntity(value);
+		}
+	}
+	
+	/// <summary>
+	/// Dolby staff member identified as the owner of this system
+	/// </summary>
+	[Microsoft.SharePoint.Linq.ColumnAttribute(Name="Owner", Storage="_ownerId", FieldType="User", IsLookupId=true)]
+	public System.Nullable<int> OwnerId {
+		get {
+			return this._ownerId;
+		}
+		set {
+			if ((value != this._ownerId)) {
+				this.OnPropertyChanging("OwnerId", this._ownerId);
+				this._ownerId = value;
+				this.OnPropertyChanged("OwnerId");
+			}
+		}
+	}
+	
+	/// <summary>
+	/// Dolby staff member identified as the owner of this system
+	/// </summary>
+	[Microsoft.SharePoint.Linq.ColumnAttribute(Name="Owner", Storage="_ownerImnName", ReadOnly=true, FieldType="User", IsLookupValue=true)]
+	public string OwnerImnName {
+		get {
+			return this._ownerImnName;
+		}
+		set {
+			if ((value != this._ownerImnName)) {
+				this.OnPropertyChanging("OwnerImnName", this._ownerImnName);
+				this._ownerImnName = value;
+				this.OnPropertyChanged("OwnerImnName");
+			}
 		}
 	}
 	

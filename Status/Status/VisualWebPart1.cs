@@ -27,10 +27,6 @@ namespace Status.VisualWebPart1
         public string stopImgURL;
         public string coneImgURL;
         public string warnImgURL;
-        public string tickImgfadeURL;
-        public string stopImgfadeURL;
-        public string coneImgfadeURL;
-        public string warnImgfadeURL;
         public string trianglerightURL;
         public string triangledownURL;
 
@@ -80,11 +76,6 @@ namespace Status.VisualWebPart1
                 stopImgURL = siteURL + "/icons/stop.png";
                 coneImgURL = siteURL + "/icons/cone.png";
                 warnImgURL = siteURL + "/icons/warn.png";
-
-                tickImgfadeURL = siteURL + "/icons/tickfade.png";
-                stopImgfadeURL = siteURL + "/icons/stopfade.png";
-                coneImgfadeURL = siteURL + "/icons/conefade.png";
-                warnImgfadeURL = siteURL + "/icons/warnfade.png";
 
                 triangledownURL = siteURL + "/icons/greentriangledown.png";
                 trianglerightURL = siteURL + "/icons/greentriangleright.png";
@@ -474,7 +465,7 @@ namespace Status.VisualWebPart1
                     
                     
                      // Now we can add the symbol
-                     if (classstatus == 0) sb.Append(@"<img src=""" + tickImgfadeURL + @""" border=""0""></td>");
+                     if (classstatus == 0) sb.Append(@"<img src=""" + tickImgURL + @""" border=""0""></td>");
                      else sb.Append(classhover + @"</td>");
              
                       

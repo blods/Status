@@ -138,6 +138,7 @@ namespace Status.VisualWebPart1
                     {
                         dolbysystems[currentsystem].daystatus[x] = new DayStatus(); // Create instances of each day
                         dolbysystems[currentsystem].daystatus[x].status = 0;        // Set them all to ticks
+                        
 
                         // Now set the periodStart and periodEnd for each day (x days will be subtracted each time)
                         if (x == 0) // If this is the first instance then start/end is right now
@@ -206,6 +207,74 @@ namespace Status.VisualWebPart1
                                     s.daystatus[x].start = outages.Start.Value;
                                     s.daystatus[x].update = outages.Update;
                                     s.daystatus[x].trackingref = outages.TrackingRef;
+
+                                    // Needs a tooltip
+                                    s.daystatus[x].hover = (@"<div class=""hasTooltip""><a href=""#tip"">");
+
+                                    // Now add the image URL
+                                    if (s.daystatus[x].status == 1)
+                                    {
+                                        s.daystatus[x].hover += (@"<img src=""" + stopImgURL + @""" border=""0""> ");
+                                    }
+                                    if (s.daystatus[x].status == 2)
+                                    {
+                                        s.daystatus[x].hover +=  (@"<img src=""" + warnImgURL + @""" border=""0""> ");
+                                    }
+                                    if (s.daystatus[x].status == 3)
+                                    {
+                                        s.daystatus[x].hover +=  (@"<img src=""" + coneImgURL + @""" border=""0""> ");
+                                    }
+
+                                    s.daystatus[x].hover += (@"</a></div>");   // Closes out the anchor and the div tag for the tooltip
+
+                                    // Now add the tooltip text
+                                    s.daystatus[x].hover += (@"<div class=""hidden"">"); // Which should initially be hidden
+
+                                    // Build the tooptip here
+                                    s.daystatus[x].hover += (@"<b>" + s.daystatus[x].title + @"</b><BR><BR>");
+
+                                    // Note: Even though time is correctly adjusted for users regional settings - the UTC always shows -7
+                                    // So the below gets the users time offset to show the correct UTC
+
+                                    var user = SPContext.Current.Web.CurrentUser;
+                                    string userstz;
+                                    if (user.RegionalSettings != null)
+                                    {
+                                        userstz = user.RegionalSettings.TimeZone.Description;
+                                    }
+                                    else
+                                    {
+                                        userstz = SPContext.Current.Web.RegionalSettings.TimeZone.Description;
+                                    }
+
+                                    s.daystatus[x].hover += (@"<span style=""color:cadetblue"">Start: <b>" + String.Format("{0:HH:mm}", s.daystatus[x].start) + @"</b>  ");
+                                    s.daystatus[x].hover += (@"End: <b>");
+
+                                    // Only show the end time if its not an ongoing outage
+                                    if (s.daystatus[x].end < DateTime.Now)
+                                    {
+                                        s.daystatus[x].hover += (String.Format("{0:HH:mm}", s.daystatus[x].end) + @"</b><BR></span>");
+                                    }
+                                    else
+                                    {
+                                        s.daystatus[x].hover += (@"ONGOING</b><BR></span>");
+                                    }
+                                    s.daystatus[x].hover += (@"<font color=#6D6D6D>" + userstz + @"<BR>");
+
+                                    s.daystatus[x].hover += (@"<BR>"); // Put a extrabreak before the next section
+
+
+
+                                    if (s.daystatus[x].update != null) s.daystatus[x].hover += (@"<span style=""color:CornflowerBlue""><b>Update</b><BR>" + s.daystatus[x].update + @"<BR><BR></span>");
+                                    if (s.daystatus[x].scope != null) s.daystatus[x].hover += (@"<span style=""color:DarkBlue""><b>Scope</b><BR>" + s.daystatus[x].scope + @"<BR><BR></span>");
+                                    if (s.daystatus[x].useraction != null) s.daystatus[x].hover += (@"<span style=""color:DodgerBlue""><b>Action</b><BR>" + s.daystatus[x].useraction + @"<BR></span>");
+
+
+
+                                    s.daystatus[x].hover += (@"<i>" + s.daystatus[x].details + @"</i>");
+                                    if (s.daystatus[x].trackingref != null) s.daystatus[x].hover += (@"<BR>Tracked: <b>" + s.daystatus[x].trackingref + @"</b>");
+
+                                    s.daystatus[x].hover += (@"</div>");
                                 }
                             }
                         }
@@ -350,23 +419,57 @@ namespace Status.VisualWebPart1
 
                     // Work out the rolled up status for this classification
                     int classstatus = 0;   // Default to checked
-
+                    string classhover = "";
                     foreach (DolbySystem s in dolbysystems)
                     {
-                        if (s.classification == c.title)
+                        if (s.classification == c.title)   
                         {
-                            if (s.daystatus[x].status > 0) classstatus = s.daystatus[x].status;
+                            if (s.daystatus[x].status > 0)  // found a matching status
+                            {
+                                if (classstatus != 0) { // classstatus was already set to something for this period
+                                    // If the new outage is a lower number than classstatus then its a higher priority
+                                    if (s.daystatus[x].status < classstatus)
+                                    {
+                                        classstatus = s.daystatus[x].status;
+                                        classhover = s.daystatus[x].hover;
+                                    }
+                                    // and modify the text to say multiple systems impacted please expand 
+                                    classhover = (@"<div class=""hasTooltip""><a href=""#tip"">");
+                                    // Now add the image URL
+                                    if (classstatus == 1)
+                                    {
+                                        classhover += (@"<img src=""" + stopImgURL + @""" border=""0""> ");
+                                    }
+                                    if (classstatus == 2)
+                                    {
+                                        classhover += (@"<img src=""" + warnImgURL + @""" border=""0""> ");
+                                    }
+                                    if (classstatus == 3)
+                                    {
+                                        classhover += (@"<img src=""" + coneImgURL + @""" border=""0""> ");
+                                    }
+                                    classhover += @"</a></div>";
+                                    classhover += (@"<div class=""hidden"">"); 
+
+                                    // Build the tooptip here
+                                    classhover += (@"<b>Multiple Systems Impacted</b><BR><BR>Click to expand and view details</div>");
+
+                                }
+                                else
+                                {
+                                    classstatus = s.daystatus[x].status;
+                                    classhover = s.daystatus[x].hover;
+                                }
+                                
+                            }
                         }
                     }
-
+                    
+                    
                      // Now we can add the symbol
                      if (classstatus == 0) sb.Append(@"<img src=""" + tickImgfadeURL + @""" border=""0""></td>");
-                     if (classstatus == 1) sb.Append(@"<img src=""" + stopImgfadeURL + @""" border=""0""></td>");
-                     if (classstatus == 2) sb.Append(@"<img src=""" + warnImgfadeURL + @""" border=""0""></td>");
-                     if (classstatus == 3) sb.Append(@"<img src=""" + coneImgfadeURL + @""" border=""0""></td>");
-                     
-
-                        
+                     else sb.Append(classhover + @"</td>");
+             
                       
                         
                  }
@@ -433,72 +536,7 @@ namespace Status.VisualWebPart1
                             else
                             {
                                 // Needs a tooltip
-                                sb.Append(@"<div class=""hasTooltip""><a href=""#tip"">");
-
-                                // Now add the image URL
-                                if (s.daystatus[x].status == 1)
-                                {
-                                    sb.Append(@"<img src=""" + stopImgURL + @""" border=""0""> ");
-                                }
-                                if (s.daystatus[x].status == 2)
-                                {
-                                    sb.Append(@"<img src=""" + warnImgURL + @""" border=""0""> ");
-                                }
-                                if (s.daystatus[x].status == 3)
-                                {
-                                    sb.Append(@"<img src=""" + coneImgURL + @""" border=""0""> ");
-                                }
-
-                                sb.Append(@"</a></div>");   // Closes out the anchor and the div tag for the tooltip
-
-                                // Now add the tooltip text
-                                sb.Append(@"<div class=""hidden"">"); // Which should initially be hidden
-
-                                // Build the tooptip here
-                                sb.Append(@"<b>" + s.daystatus[x].title + @"</b><BR><BR>");
-
-                                // Note: Even though time is correctly adjusted for users regional settings - the UTC always shows -7
-                                // So the below gets the users time offset to show the correct UTC
-
-                                var user = SPContext.Current.Web.CurrentUser;
-                                string userstz;
-                                if (user.RegionalSettings != null)
-                                {
-                                    userstz = user.RegionalSettings.TimeZone.Description;
-                                }
-                                else
-                                {
-                                    userstz = SPContext.Current.Web.RegionalSettings.TimeZone.Description;
-                                }
-                         
-                                sb.Append(@"<span style=""color:cadetblue"">Start: <b>" + String.Format("{0:HH:mm}", s.daystatus[x].start) + @"</b>  ");
-                                sb.Append(@"End: <b>");
-
-                                // Only show the end time if its not an ongoing outage
-                                if (s.daystatus[x].end < DateTime.Now)
-                                {
-                                    sb.Append(String.Format("{0:HH:mm}", s.daystatus[x].end) + @"</b><BR></span>");
-                                }
-                                else
-                                {
-                                    sb.Append(@"ONGOING</b><BR></span>");
-                                }
-                                sb.Append(@"<font color=#6D6D6D>" + userstz + @"<BR>");
-
-                                sb.Append(@"<BR>"); // Put a extrabreak before the next section
-
-                                
-
-                                if (s.daystatus[x].update != null) sb.Append(@"<span style=""color:CornflowerBlue""><b>Update</b><BR>" + s.daystatus[x].update + @"<BR><BR></span>");
-                                if (s.daystatus[x].scope != null) sb.Append(@"<span style=""color:DarkBlue""><b>Scope</b><BR>" + s.daystatus[x].scope + @"<BR><BR></span>");
-                                if (s.daystatus[x].useraction != null) sb.Append(@"<span style=""color:DodgerBlue""><b>Action</b><BR>" + s.daystatus[x].useraction + @"<BR></span>");
-                                
-
-
-                                sb.Append(@"<i>" + s.daystatus[x].details + @"</i>");
-                                if (s.daystatus[x].trackingref != null) sb.Append(@"<BR>Tracked: <b>" + s.daystatus[x].trackingref + @"</b>");
-
-                                sb.Append(@"</div>");
+                                sb.Append(s.daystatus[x].hover);
 
 
                                 // Now close out the cell
@@ -547,14 +585,19 @@ namespace Status.VisualWebPart1
             writer.WriteAttribute("language", "javascript");
             writer.WriteAttribute("type", "text/javascript");
             writer.Write(HtmlTextWriter.TagRightChar);
+            writer.Write(@"var history = 0;");  // Is 0 when history is collapsed and 1 when expanded
             writer.Write(@"$(document).ready(function() {
+            
             $('table.detail').each(function() {
 
                 var $table = $(this);
                 $table.find('.parent').click(function() {
                     //$childRows.hide();
-                    $(this).nextUntil('.parent').toggle();
+                    
+                    // We need some condition here to find out if we're on a collapsed or expanded view.
 
+                    $(this).nextUntil('.parent').toggle();
+                    
                     // This switches the green triangles
                     if (($('#triangle',this).attr(""src"")) == """ + trianglerightURL + @""")
                     {
@@ -570,7 +613,6 @@ namespace Status.VisualWebPart1
 
                 $('#btnCollapseAll').click(function() {
                     $childRows.hide();
-
                     $('img').each(function(i) {
                         if (this.src == """ + triangledownURL + @""") {
                             this.src = """ + trianglerightURL + @""";
@@ -580,7 +622,6 @@ namespace Status.VisualWebPart1
 
                 $('#btnExpandAll').click(function() {
                     $childRows.show();
-
                     $('img').each(function(i) {
                         if (this.src == """ + trianglerightURL + @""") {
                             this.src = """ + triangledownURL + @""";
@@ -613,7 +654,8 @@ namespace Status.VisualWebPart1
             writer.Write(
                 @"$(document).ready(function() {
                 $('#btnHideHistory').click(function() {
-                $("".history"").hide('fast');
+                $("".history"").hide();
+                history=0;
                 $('table.detail').attr('width','330px');
                 });
                 });");
@@ -627,7 +669,8 @@ namespace Status.VisualWebPart1
             writer.Write(
                 @"$(document).ready(function() {
                 $('#btnShowHistory').click(function() {
-                $("".history"").show('fast');
+                $("".history"").show();
+                history=1;
                 $('table.detail').attr('width','100%');                
                 });
                 });");
@@ -761,6 +804,7 @@ namespace Status.VisualWebPart1
         public DateTime periodStart;// represents the start of this day
         public DateTime periodEnd;  // represents the end of this day
         public string daytext;      // day text
+        public string hover;
 
     }
 }

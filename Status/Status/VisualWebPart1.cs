@@ -169,10 +169,17 @@ namespace Status.VisualWebPart1
                 foreach (var outages in query)
                 {
                     // For each outage we need to first match the system 
-
+                    
                     foreach (DolbySystem s in dolbysystems)
                     {
-                        if (s.name == outages.System.Title)
+                        int match = 0;
+                        foreach (var sys in outages.System)
+                        {
+                            if (sys.Title == s.name) match=1;
+
+                        }
+
+                        if (match==1)
                         {
                             
                             // Check each of the last 7 days 

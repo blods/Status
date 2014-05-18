@@ -505,7 +505,7 @@ public partial class OutagesItem : Item {
 	
 	private System.Nullable<Defcon> _defcon;
 	
-	private Microsoft.SharePoint.Linq.EntityRef<SystemsItem> _system;
+	private Microsoft.SharePoint.Linq.EntitySet<SystemsItem> _system;
 	
 	#region Extensibility Method Definitions
 	partial void OnLoaded();
@@ -514,7 +514,7 @@ public partial class OutagesItem : Item {
 	#endregion
 	
 	public OutagesItem() {
-		this._system = new Microsoft.SharePoint.Linq.EntityRef<SystemsItem>();
+		this._system = new Microsoft.SharePoint.Linq.EntitySet<SystemsItem>();
 		this._system.OnSync += new System.EventHandler<Microsoft.SharePoint.Linq.AssociationChangedEventArgs<SystemsItem>>(this.OnSystemSync);
 		this._system.OnChanged += new System.EventHandler(this.OnSystemChanged);
 		this._system.OnChanging += new System.EventHandler(this.OnSystemChanging);
@@ -685,13 +685,13 @@ public partial class OutagesItem : Item {
 	/// <summary>
 	/// System experiencing a problem
 	/// </summary>
-	[Microsoft.SharePoint.Linq.AssociationAttribute(Name="System", Storage="_system", MultivalueType=Microsoft.SharePoint.Linq.AssociationType.Single, List="Systems")]
-	public SystemsItem System {
+	[Microsoft.SharePoint.Linq.AssociationAttribute(Name="System", Storage="_system", MultivalueType=Microsoft.SharePoint.Linq.AssociationType.Multi, List="Systems")]
+	public Microsoft.SharePoint.Linq.EntitySet<SystemsItem> System {
 		get {
-			return this._system.GetEntity();
+			return this._system;
 		}
 		set {
-			this._system.SetEntity(value);
+			this._system.Assign(value);
 		}
 	}
 	
@@ -915,10 +915,10 @@ public partial class SystemsItem : Item {
 	
 	private void OnOutagesItemSync(object sender, Microsoft.SharePoint.Linq.AssociationChangedEventArgs<OutagesItem> e) {
 		if ((Microsoft.SharePoint.Linq.AssociationChangedState.Added == e.State)) {
-			e.Item.System = this;
+			e.Item.System.Add(this);
 		}
 		else {
-			e.Item.System = null;
+			e.Item.System.Remove(this);
 		}
 	}
 	

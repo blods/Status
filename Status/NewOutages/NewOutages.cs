@@ -26,7 +26,8 @@ namespace Status.NewOutages
         public string outageDefcon="";
         public string outageTrackingRef="";
 
-        
+        public DateTime start;
+        public DateTime end;
 
         /// <summary>
         /// An item is being added.
@@ -51,6 +52,8 @@ namespace Status.NewOutages
         {
 
             List<string> recipients = new List<string>();   // To store the email recipients
+            SPListItem thisItem = prop.ListItem;
+
 
             // Only do something if 'Activate Emails' is set to yes
             if (prop.ListItem["Activate Emails"].ToString() == "True")
@@ -61,8 +64,24 @@ namespace Status.NewOutages
                 if (prop.ListItem["Update"] != null) outageUpdate = prop.ListItem["Update"].ToString();
                 if (prop.ListItem["Scope of Impact"] != null) outageScope = prop.ListItem["Scope of Impact"].ToString();
                 if (prop.ListItem["User Action Required"] != null) outageAction = prop.ListItem["User Action Required"].ToString();
-                if (prop.ListItem["Start"] != null) outageStart = prop.ListItem["Start"].ToString();
-                if (prop.ListItem["End"] != null) outageEnd = prop.ListItem["End"].ToString();
+                if (prop.ListItem["Start"] != null)
+                {
+                    DateTime start = new DateTime();
+ 
+                    start =  (DateTime) thisItem["Start"];
+                    
+                    outageStart = string.Format("{0:MMMM d, yyyy h:mm tt} (UTC {0:zz})", start);
+                }
+                if (prop.ListItem["End"] != null)
+                {
+                    DateTime end = new DateTime();
+                    end = (DateTime)thisItem["End"];
+                    outageEnd = string.Format("{0:MMMM d, yyyy h:mm tt} (UTC {0:zz})", end);
+                }
+                else
+                {
+                    outageEnd = "Ongoing";
+                }
                 if (prop.ListItem["Details"] != null) outageDetails = prop.ListItem["Details"].ToString();
                 outageDefcon = prop.ListItem["Defcon"].ToString();
                 if (prop.ListItem["TrackingRef"] != null) outageTrackingRef = prop.ListItem["TrackingRef"].ToString();
@@ -86,8 +105,9 @@ namespace Status.NewOutages
                     string subscription;
                     string usersname;
                     string trackID="x";
+                    int count = 0;
 
-
+                    
                     // Loop around each of the systems in turn
                     foreach (SPFieldLookupValue itemValue in multichoice)
                     {
@@ -116,7 +136,7 @@ namespace Status.NewOutages
 
                     foreach (string recipient in recipients)
                     {
-                        int count = 0;
+                        
                         // Now we start building the email
                         MailMessage mail = new MailMessage();
                         mail.From = new MailAddress("connect@dolby.com");
@@ -154,13 +174,17 @@ namespace Status.NewOutages
                         smtp.UseDefaultCredentials = false;
 
 
-                        mail.To.Add(recipient + "@dolby.net");
+                        mail.To.Add(recipient + "@dolby.com");
                         smtp.Send(mail);
                         count++;
 
                     }
                     
+                    // Email are all sent so update
                     
+                    thisItem["EmailsSent"] = count.ToString();
+                    thisItem["EmailsSend"] = false;
+                    thisItem.Update();
                     
 
                 }

@@ -503,6 +503,8 @@ public partial class OutagesItem : Item {
 	
 	private System.Nullable<double> _emailCount;
 	
+	private System.Nullable<System.DateTime> _lastEmailSent;
+	
 	private System.Nullable<Defcon> _defcon;
 	
 	private Microsoft.SharePoint.Linq.EntitySet<SystemsItem> _system;
@@ -661,6 +663,23 @@ public partial class OutagesItem : Item {
 				this.OnPropertyChanging("EmailCount", this._emailCount);
 				this._emailCount = value;
 				this.OnPropertyChanged("EmailCount");
+			}
+		}
+	}
+	
+	/// <summary>
+	/// Date of Last Email
+	/// </summary>
+	[Microsoft.SharePoint.Linq.ColumnAttribute(Name="LastEmailSent", Storage="_lastEmailSent", FieldType="DateTime")]
+	public System.Nullable<System.DateTime> LastEmailSent {
+		get {
+			return this._lastEmailSent;
+		}
+		set {
+			if ((value != this._lastEmailSent)) {
+				this.OnPropertyChanging("LastEmailSent", this._lastEmailSent);
+				this._lastEmailSent = value;
+				this.OnPropertyChanged("LastEmailSent");
 			}
 		}
 	}

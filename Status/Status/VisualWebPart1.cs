@@ -29,6 +29,10 @@ namespace Status.VisualWebPart1
         public string warnImgURL;
         public string trianglerightURL;
         public string triangledownURL;
+        public string historyexpand;
+        public string historycollapse;
+        public string bigtriangledown;
+        public string bigtriangleright;
 
 
         public string subscribedTo;         // What the current user has subscribed to
@@ -79,7 +83,10 @@ namespace Status.VisualWebPart1
 
                 triangledownURL = siteURL + "/icons/greentriangledown.png";
                 trianglerightURL = siteURL + "/icons/greentriangleright.png";
-
+                historycollapse = siteURL + "/icons/historycollapse.png";
+                historyexpand = siteURL + "/icons/historyexpand.png";
+                bigtriangledown = siteURL + "/icons/bigtriangledown.jpg";
+                bigtriangleright = siteURL + "/icons/bigtriangleright.jpg";
 
                 // Create an array of systems & classifications
                 classifications = new Classifications[classificationcount];
@@ -334,11 +341,14 @@ namespace Status.VisualWebPart1
             StringBuilder sb = new StringBuilder();
 
             // Add some buttons temporarily
-            sb.Append(@"<input id=""btnShowHistory"" type=""button"" value=""Show History""/>");
-            sb.Append(@"<input id=""btnHideHistory"" type=""button"" value=""Hide History""/>");
-            sb.Append(@"<input id=""btnExpandAll"" type=""button"" value=""Expand All""/>");
-            sb.Append(@"<input id=""btnCollapseAll"" type=""button"" value=""Collapse All""/>");
+            
+            sb.Append(@"<button class=""btnshowhistory"" type=""button"" style=""font-face:'Arial';font-weight:bold;font-size:1em;color:#909090;background-color:#FFFFFF;border:1pt solid white"" value=""Show History"" id=""btnShowHistory""><img src=""" + historyexpand + @""" width=""20"" height=""20"" alt="""" align=""right""/>Show</button>");
+            sb.Append(@"<button class=""btnshowhistory"" type=""button"" style=""font-face:'Arial';font-weight:bold;font-size:1em;color:#909090;background-color:#FFFFFF;border:1pt solid white"" value=""Show History"" id=""btnHideHistory""><img src=""" + historycollapse + @""" width=""20"" height=""20"" alt="""" align=""right""/>Hide</button>");
 
+            sb.Append(@"<button class=""btnExpandAll"" type=""button"" style=""font-face:'Arial';font-weight:bold;font-size:1em;color:#909090;background-color:#FFFFFF;border:1pt solid white"" value=""Expand"" id=""btnExpandAll""><img src=""" + bigtriangledown + @""" width=""15"" height=""15"" alt="""" align=""right""/>Expand</button>");
+            sb.Append(@"<button class=""btnCollapseAll"" type=""button"" style=""font-face:'Arial';font-weight:bold;font-size:1em;color:#909090;background-color:#FFFFFF;border:1pt solid white"" value=""Collapse"" id=""btnCollapseAll""><img src=""" + bigtriangleright + @""" width=""15"" height=""15"" alt="""" align=""right""/>Collapse</button>");
+            
+            
             sb.AppendLine(@"<BR><table class=""detail"" align=""left"" style=""border: 1px solid #D4D0C8"">");
             sb.AppendLine("<tbody>");
 
@@ -351,8 +361,10 @@ namespace Status.VisualWebPart1
             for (int x = 7; x >= 0; x--)
             {
                 sb.AppendLine(@"<td ");
+                
                 if (x>0) {sb.Append(@"class=""history"" ");}    // if this isnt now then assign the class history
-                sb.Append(@"style=""font-size: 12px; text-align: center; background-color: #909090; color: #FFFFFF""><strong>" + dolbysystems[0].daystatus[x].daytext + "</strong></td>");                    
+                sb.Append(@"style=""font-size: 12px; text-align: center; background-color: #909090; color: #FFFFFF""><strong>" + dolbysystems[0].daystatus[x].daytext + "</strong>");
+                sb.Append(@"</td>");                    
             }
 
             // End a row
@@ -361,7 +373,7 @@ namespace Status.VisualWebPart1
 
 
             int alternaterows = 0;              // Used to keep track and flip colors on systems
-            int alternateclass = 0;             // Used to keep track and flip colors on classes
+            int alternateclass = 1;             // Used to keep track and flip colors on classes
 
             string alternateshade = "#FFFFCC";  // This is for the shading of the first 3 columns
             string alternateshade2 = "#F2FCCA"; // This is for the shading for the columns 4 and up - but is either on or off
@@ -474,7 +486,7 @@ namespace Status.VisualWebPart1
 
                 sb.AppendLine("</tr>");
 
-
+                int altsyscolor = 1;
                 // Now loop through the systems
                 foreach (DolbySystem s in dolbysystems)
                 {
@@ -483,19 +495,19 @@ namespace Status.VisualWebPart1
                         sb.AppendLine(@"<tr class=""child"">");
 
                         // Flip between the two colors for the first 3 columns
-                        if (alternateclass == 0)
+                        if (altsyscolor == 0)
                         {
                             alternateshade = "#FFFFCC";
-                            alternaterows = 1;
+                            altsyscolor = 1;
                         }
                         else
                         {
                             alternateshade = "#F2FCCA";
-                            alternaterows = 0;
+                            altsyscolor = 0;
                         }
-
+                        
                         // Do the Check box and System title
-                        //sb.AppendLine(@"<td style=""text-align: right; background-color: " + alternateshade + @"""><div title=""" + s.description + @"""><strong>" + s.name + @"</strong></div><div title=""Select to receive E-Mail status updates for this system""><input name=""Checkbox1"" class=""thecheckboxes"" ID=""" + s.trackID + @"</div>"" ");
+                       
                         sb.AppendLine(@"<td title=""" + s.description + @""" style=""cursor:default; text-align: right; background-color: " + alternateshade + @""">" + s.name + @"<input name=""Checkbox1"" class=""thecheckboxes"" title=""Select to receive E-Mail status updates for this system"" ID=""" + s.trackID + @""" ");
                         
                         if (s.subscribed == 1) { sb.AppendLine(@" checked "); }
@@ -504,6 +516,8 @@ namespace Status.VisualWebPart1
 
                         for (int x = 7; x >= 0; x--)
                         {
+
+ 
                             sb.Append(@"<td ");
                             if (x > 0) sb.Append(@"class=""history"" ");
                             sb.Append(@"style=""text-align: center;");
@@ -516,13 +530,13 @@ namespace Status.VisualWebPart1
                             else
                             {
                                 // Only add the shading for column 4 and up every other cycle - otherwise its clear
-                                if (alternaterows == 1)
+                                if (altsyscolor == 1)
                                 {
                                     sb.Append(@" background-color: " + alternateshade2 + @";"">");
                                 }
                                 else
                                 {  // No shading here
-                                    sb.Append(@""">");
+                                    sb.Append(@" background-color:#FAFEEA;"">");
                                 }
                             }
 

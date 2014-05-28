@@ -144,7 +144,7 @@ namespace Status.NewOutages
                         mail.BodyEncoding = System.Text.Encoding.UTF8;
 
                         mail.Subject = "STATUS ALERT - " + outageTitle;
-                        mail.Body += @"<HTML><HEAD><STYLE TYPE=""text/css""> <!-- TD{font-family: Arial; font-size: 10pt;} ---> </STYLE></HEAD><BODY>";
+                        mail.Body += @"<HTML><HEAD><STYLE TYPE=""text/css""> <!-- TD{font-family: Verdana; font-size: 10pt;} ---> </STYLE></HEAD><BODY>";
                         mail.Body += @"<table><tr><td style=""border-bottom=1px solid black; border-right=1px solid black;width: 200px"" valign=""top"">Update</td>";
                         mail.Body += @"<td style=""border-bottom=1px solid black; width: 600px"">" + outageUpdate + @"</td></tr>";
                         mail.Body += @"<tr><td style=""border-bottom=1px solid black;border-right=1px solid black;width: 200px"" valign=""top"">Scope of Impact</td>";
@@ -168,7 +168,7 @@ namespace Status.NewOutages
                         mail.Body += @"<td style=""border-bottom=1px solid black; width: 600px"">" + outageTrackingRef + "</td></tr>";
 
                         mail.Body += @"</table>";
-                        mail.Body += @"<br><p><font color=""#BBBBBB""><font face=""Arial"">To unsubscribe from notifications related to this system, click <a href=""https://dolbyconnect.dolby.net/LiveStat"">here</a></p>";
+                        mail.Body += @"<br><p><font color=""#BBBBBB""><font face=""Verdana""><font size=""2"">To unsubscribe from notifications related to this system, click <a href=""https://dolbyconnect.dolby.net/LiveStat"">here</a></p>";
                         mail.Body += @"</BODY></HTML>";
                         SmtpClient smtp = new SmtpClient("mail.dolby.net");
                         smtp.UseDefaultCredentials = false;
@@ -184,6 +184,7 @@ namespace Status.NewOutages
                     
                     thisItem["EmailsSent"] = count.ToString();
                     thisItem["EmailsSend"] = false;
+                    thisItem["LastEmailSent"] = DateTime.Now;
                     thisItem.Update();
                     
 

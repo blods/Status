@@ -9,10 +9,12 @@ using Microsoft.SharePoint.WebControls;
 using System.Linq;
 using System.Globalization;
 using System.Text;
+using System.Collections.Generic;
 
 
 namespace Status.VisualWebPart1
 {
+
     [ToolboxItemAttribute(false)]
     public class VisualWebPart1 : WebPart
     {
@@ -107,6 +109,9 @@ namespace Status.VisualWebPart1
 
                 // Populate the array with the list of systems
                 int currentsystem = 0;  // start at 0 and loop through each
+                DateTime currentDestTime = DateTime.Now;
+                DateTime currentLocalDateTime = DateTime.Now;
+
                 foreach (SystemsItem system in result)
                 {
                     dolbysystems[currentsystem] = new DolbySystem();
@@ -130,6 +135,14 @@ namespace Status.VisualWebPart1
 
                     }
 
+                    // Find out the current users timezone
+                    var loggedInUser = SPContext.Current.Web.CurrentUser;
+                    
+
+                    if (loggedInUser.RegionalSettings != null)
+                    {
+                        currentDestTime = loggedInUser.RegionalSettings.TimeZone.UTCToLocalTime(currentLocalDateTime.ToUniversalTime());
+                    }
 
                     dolbysystems[currentsystem].daystatus = new DayStatus[8];
                     for (int x = 0; x < 8; x++)
@@ -141,25 +154,25 @@ namespace Status.VisualWebPart1
                         // Now set the periodStart and periodEnd for each day (x days will be subtracted each time)
                         if (x == 0) // If this is the first instance then start/end is right now
                         {
-                            dolbysystems[currentsystem].daystatus[x].periodStart = DateTime.Now;
-                            dolbysystems[currentsystem].daystatus[x].periodEnd = DateTime.Now;
+                            dolbysystems[currentsystem].daystatus[x].periodStart = currentDestTime;
+                            dolbysystems[currentsystem].daystatus[x].periodEnd = currentDestTime;
                             dolbysystems[currentsystem].daystatus[x].daytext = "Current<BR>Status";
                         }
                         else
                         {   // Looks complicated but this is just working out a clean start and end fo each day so 12AM to 11:59:59PM 
-                            dolbysystems[currentsystem].daystatus[x].periodStart = DateTime.Today.Date.AddDays(-(x-1));
-                            dolbysystems[currentsystem].daystatus[x].periodEnd = DateTime.Today.Date.AddDays(-(x-1)).AddSeconds(86399);
-                            dolbysystems[currentsystem].daystatus[x].daytext = DateTime.Today.Date.AddDays(-(x - 1)).ToString("ddd", CultureInfo.CreateSpecificCulture("en-US")) + "<br />" + DateTime.Today.Date.AddDays(-(x - 1)).ToString("dd", CultureInfo.CreateSpecificCulture("en-US"));
+                            dolbysystems[currentsystem].daystatus[x].periodStart = currentDestTime.Date.AddDays(-(x-1));
+                            dolbysystems[currentsystem].daystatus[x].periodEnd = currentDestTime.Date.AddDays(-(x-1)).AddSeconds(86399);
+                            dolbysystems[currentsystem].daystatus[x].daytext = currentDestTime.Date.AddDays(-(x - 1)).ToString("ddd", CultureInfo.CreateSpecificCulture("en-US")) + "<br />" + currentDestTime.Date.AddDays(-(x - 1)).ToString("dd", CultureInfo.CreateSpecificCulture("en-US"));
                         }
                     }
 
                     currentsystem++;    // Move onto the next system
                 }
 
-           
+                         
                 // Time to look for outages to reflect in the data - Return all outages from up to 10 days ago sorted by defcon (low to high)
                 var query = from outages in context.Outages
-                            where outages.Start >= DateTime.Now.AddDays(-10)
+                            where outages.Start >= currentDestTime.AddDays(-10)
                             orderby outages.Defcon descending
                             select outages;
 
@@ -270,9 +283,9 @@ namespace Status.VisualWebPart1
 
 
 
-                                    if (s.daystatus[x].update != null) s.daystatus[x].hover += (@"<span style=""color:CornflowerBlue""><b>Update</b><BR>" + s.daystatus[x].update + @"<BR><BR></span>");
-                                    if (s.daystatus[x].scope != null) s.daystatus[x].hover += (@"<span style=""color:DarkBlue""><b>Scope</b><BR>" + s.daystatus[x].scope + @"<BR><BR></span>");
-                                    if (s.daystatus[x].useraction != null) s.daystatus[x].hover += (@"<span style=""color:DodgerBlue""><b>Action</b><BR>" + s.daystatus[x].useraction + @"<BR></span>");
+                                    if (s.daystatus[x].update != null) s.daystatus[x].hover += (@"<span style=""color:Gray""><b>Update</b><BR>" + s.daystatus[x].update + @"<BR><BR></span>");
+                                    if (s.daystatus[x].scope != null) s.daystatus[x].hover += (@"<span style=""color:Gray""><b>Scope</b><BR>" + s.daystatus[x].scope + @"<BR><BR></span>");
+                                    if (s.daystatus[x].useraction != null) s.daystatus[x].hover += (@"<span style=""color:Gray""><b>Action</b><BR>" + s.daystatus[x].useraction + @"<BR></span>");
 
 
 

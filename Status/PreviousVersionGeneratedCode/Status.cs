@@ -487,6 +487,8 @@ public partial class OutagesItem : Item {
 	
 	private System.Nullable<System.DateTime> _start;
 	
+	private System.Nullable<System.DateTime> _end;
+	
 	private string _details;
 	
 	private string _scopeOfImpact;
@@ -494,8 +496,6 @@ public partial class OutagesItem : Item {
 	private string _userActionRequired;
 	
 	private string _trackingRef;
-	
-	private System.Nullable<System.DateTime> _end;
 	
 	private string _update;
 	
@@ -533,6 +533,23 @@ public partial class OutagesItem : Item {
 				this.OnPropertyChanging("Start", this._start);
 				this._start = value;
 				this.OnPropertyChanged("Start");
+			}
+		}
+	}
+	
+	/// <summary>
+	/// Problem end time
+	/// </summary>
+	[Microsoft.SharePoint.Linq.ColumnAttribute(Name="End", Storage="_end", FieldType="DateTime")]
+	public System.Nullable<System.DateTime> End {
+		get {
+			return this._end;
+		}
+		set {
+			if ((value != this._end)) {
+				this.OnPropertyChanging("End", this._end);
+				this._end = value;
+				this.OnPropertyChanged("End");
 			}
 		}
 	}
@@ -595,23 +612,6 @@ public partial class OutagesItem : Item {
 				this.OnPropertyChanging("TrackingRef", this._trackingRef);
 				this._trackingRef = value;
 				this.OnPropertyChanged("TrackingRef");
-			}
-		}
-	}
-	
-	/// <summary>
-	/// Problem end time
-	/// </summary>
-	[Microsoft.SharePoint.Linq.ColumnAttribute(Name="End", Storage="_end", FieldType="DateTime")]
-	public System.Nullable<System.DateTime> End {
-		get {
-			return this._end;
-		}
-		set {
-			if ((value != this._end)) {
-				this.OnPropertyChanging("End", this._end);
-				this._end = value;
-				this.OnPropertyChanged("End");
 			}
 		}
 	}

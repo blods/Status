@@ -139,33 +139,58 @@ namespace Status.NewOutages
                         
                         // Now we start building the email
                         MailMessage mail = new MailMessage();
-                        mail.From = new MailAddress("connect@dolby.com");
+                        mail.From = new MailAddress("itannouncement@dolby.com");
                         mail.IsBodyHtml = true;
                         mail.BodyEncoding = System.Text.Encoding.UTF8;
 
                         mail.Subject = "STATUS ALERT - " + outageTitle;
                         mail.Body += @"<HTML><HEAD><STYLE TYPE=""text/css""> <!-- TD{font-family: Verdana; font-size: 10pt;} ---> </STYLE></HEAD><BODY>";
-                        mail.Body += @"<table><tr><td style=""border-bottom=1px solid black; border-right=1px solid black;width: 200px"" valign=""top"">Update</td>";
-                        mail.Body += @"<td style=""border-bottom=1px solid black; width: 600px"">" + outageUpdate + @"</td></tr>";
-                        mail.Body += @"<tr><td style=""border-bottom=1px solid black;border-right=1px solid black;width: 200px"" valign=""top"">Scope of Impact</td>";
-                        mail.Body += @"<td style=""border-bottom=1px solid black; width: 600px"">" + outageScope + @"</td></tr>";
-                        mail.Body += @"<tr><td style=""border-bottom=1px solid black;border-right=1px solid black;width: 200px"" valign=""top"">Systems Impacted</td>";
+                        mail.Body += @"<table>";
+                        
+                        if (outageUpdate != "")
+                        {
+                            mail.Body += @"<tr><td style=""border-bottom=1px solid black; border-right=1px solid black;width: 200px"" valign=""top""><b>Update</b></td>";
+                            mail.Body += @"<td style=""border-bottom=1px solid black; width: 600px"">" + outageUpdate + @"</td></tr>";
+                        }
+
+                        if (outageScope != "")
+                        {
+                            mail.Body += @"<tr><td style=""border-bottom=1px solid black;border-right=1px solid black;width: 200px"" valign=""top""><b>Scope of Impact</b></td>";
+                            mail.Body += @"<td style=""border-bottom=1px solid black; width: 600px"">" + outageScope + @"</td></tr>";
+                        }
+                        
+                        mail.Body += @"<tr><td style=""border-bottom=1px solid black;border-right=1px solid black;width: 200px"" valign=""top""><b>Systems Impacted</b></td>";
                         mail.Body += @"<td style=""border-bottom=1px solid black;width: 600px"">";
                         foreach (SPFieldLookupValue sysval in multichoice)
                         {
                             mail.Body += sysval.LookupValue + @"<BR>";
                         }
                         mail.Body += @"</td></tr>";
-                        mail.Body += @"<tr><td style=""border-bottom=1px solid black;border-right=1px solid black;width: 200px"" valign=""top"">Details</td>";
-                        mail.Body += @"<td style=""border-bottom=1px solid black; width: 600px"">" + outageDetails + @"</td></tr>";
-                        mail.Body += @"<tr><td style=""border-bottom=1px solid black;border-right=1px solid black;width: 200px"" valign=""top"">User Action Required</td>";
-                        mail.Body += @"<td style=""border-bottom=1px solid black; width: 600px"">" + outageAction + @"</td></tr>";
-                        mail.Body += @"<tr><td style=""border-bottom=1px solid gray;border-right=1px solid black;width: 200px"" valign=""top"">Interruption Start Time</td>";
+
+                        if (outageDetails != "")
+                        {
+                            mail.Body += @"<tr><td style=""border-bottom=1px solid black;border-right=1px solid black;width: 200px"" valign=""top""><b>Details</b></td>";
+                            mail.Body += @"<td style=""border-bottom=1px solid black; width: 600px"">" + outageDetails + @"</td></tr>";
+                        }
+
+                        if (outageAction != "")
+                        {
+                            mail.Body += @"<tr><td style=""border-bottom=1px solid black;border-right=1px solid black;width: 200px"" valign=""top""><b>User Action Required</b></td>";
+                            mail.Body += @"<td style=""border-bottom=1px solid black; width: 600px"">" + outageAction + @"</td></tr>";
+                        }
+                        
+                        
+                        mail.Body += @"<tr><td style=""border-bottom=1px solid gray;border-right=1px solid black;width: 200px"" valign=""top""><b>Interruption Start Time</b></td>";
                         mail.Body += @"<td style=""border-bottom=1px solid black; width: 600px"">" + outageStart + @"</td></tr>";
-                        mail.Body += @"<tr><td style=""border-bottom=1px solid gray;border-right=1px solid black;width: 200px"" valign=""top"">Interruption End Time</td>";
+                        mail.Body += @"<tr><td style=""border-bottom=1px solid gray;border-right=1px solid black;width: 200px"" valign=""top""><b>Interruption End Time</b></td>";
                         mail.Body += @"<td style=""border-bottom=1px solid black; width: 600px"">" + outageEnd + @"</td></tr>";
-                        mail.Body += @"<tr><td style=""border-bottom=1px solid black;border-right=1px solid black;width: 200px"" valign=""top"">Tracking Reference</td>";
-                        mail.Body += @"<td style=""border-bottom=1px solid black; width: 600px"">" + outageTrackingRef + "</td></tr>";
+
+                        if (outageTrackingRef != "")
+                        {
+                            mail.Body += @"<tr><td style=""border-bottom=1px solid black;border-right=1px solid black;width: 200px"" valign=""top""><b>Tracking Reference</b></td>";
+                            mail.Body += @"<td style=""border-bottom=1px solid black; width: 600px"">" + outageTrackingRef + "</td></tr>";
+                        }
+       
 
                         mail.Body += @"</table>";
                         mail.Body += @"<br><p><font color=""#BBBBBB""><font face=""Verdana""><font size=""2"">To unsubscribe from notifications related to this system, click <a href=""https://dolbyconnect.dolby.net/LiveStat"">here</a></p>";

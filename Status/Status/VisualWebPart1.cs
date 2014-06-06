@@ -36,6 +36,7 @@ namespace Status.VisualWebPart1
         public string bigtriangledown;
         public string bigtriangleright;
 
+        string noticeText = ""; // Stores notices
 
         public string subscribedTo;         // What the current user has subscribed to
 
@@ -89,6 +90,35 @@ namespace Status.VisualWebPart1
                 historyexpand = siteURL + "/icons/historyexpand.png";
                 bigtriangledown = siteURL + "/icons/bigtriangledown.jpg";
                 bigtriangleright = siteURL + "/icons/bigtriangleright.jpg";
+
+                
+                // Read Notice list
+                using (SPSite site = new SPSite(SPContext.Current.Web.Url))
+                {
+                    using (SPWeb web = site.OpenWeb())
+                    {
+                        SPList lists = web.Lists["Notice"];
+                        foreach (SPListItem item in lists.Items) {
+                            string t = item["Display"].ToString();
+                            if (item["Display"].ToString() == "True")
+                            {
+                                try
+                                {
+                                    if (item["Title"].ToString() != null)
+                                    {
+                                        noticeText += @"<b>" + item["Title".ToString()] + @"</b>";
+                                    }
+                                }
+                                catch { }
+                                try
+                                {
+                                    noticeText += Convert.ToString(item["Notice"]);
+                                }
+                                catch { }
+                            }
+                        }
+                    }
+                }
 
                 // Create an array of systems & classifications
                 classifications = new Classifications[classificationcount];
@@ -342,19 +372,13 @@ namespace Status.VisualWebPart1
             // Add CSS to hide tooltips and add padding
             writer.Write("<style>  .hidden {display:none;} </style>");
 
-            // Start the table
-            Table infoTable = new Table();
-            infoTable.Attributes.Add("border", "1px");
-
-            //Render the table
-            infoTable.RenderControl(writer);
 
             
            
             StringBuilder sb = new StringBuilder();
 
             // Add some buttons temporarily
-            
+            sb.Append(noticeText);
             sb.Append(@"<button class=""btnshowhistory"" type=""button"" style=""font-face:'Arial';font-weight:bold;font-size:1em;color:#909090;background-color:#FFFFFF;border:1pt solid white"" value=""Show History"" id=""btnShowHistory""><img src=""" + historyexpand + @""" width=""20"" height=""20"" alt="""" align=""right""/>Show</button>");
             sb.Append(@"<button class=""btnshowhistory"" type=""button"" style=""font-face:'Arial';font-weight:bold;font-size:1em;color:#909090;background-color:#FFFFFF;border:1pt solid white"" value=""Show History"" id=""btnHideHistory""><img src=""" + historycollapse + @""" width=""20"" height=""20"" alt="""" align=""right""/>Hide</button>");
 

@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Elements xmlns="http://schemas.microsoft.com/sharepoint/">
-  <Receivers ListUrl="/Status/Lists/Outages">
+  <Receivers ListUrl="/LiveStat/Lists/Outages">
     <Receiver>
       <Name>NewOutagesItemAdded</Name>
       <Type>ItemAdded</Type>
